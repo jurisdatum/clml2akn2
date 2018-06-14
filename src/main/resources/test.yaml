@@ -1,0 +1,741 @@
+# processing-instruction('change')
+
+# mappings from CLML elements to Akoma Ntoso elements
+---
+? - Legislation
+: - act
+  - portion
+
+? - '/Legislation/ukm:Metadata'
+: - '/akomaNtoso/*/meta'
+
+? - '/Legislation/ukm:Metadata//*'
+  - 'Legislation/@RestrictStartDate'
+  - 'Legislation/@RestrictEndtDate'
+  - 'Legislation/@Status'
+: - '/akomaNtoso/*/meta/proprietary//*'
+
+? - Commentary
+  - MarginNote
+  - Footnote
+: - note
+  - tblock[@class='footnote']
+
+? - Commentary/Para/Text
+  - MarginNote/Para/Text
+  - Footnote//Para/Text
+: - note/p
+  - tblock[@class='footnote']/p
+
+? - CommentaryRef
+  - MarginNoteRef
+  - FootnoteRef
+: - noteRef[not(contains(@class, 'attribute'))]
+
+
+? - PrimaryPrelims
+  - SecondaryPrelims
+: - preface
+
+? - PrimaryPrelims/Title
+  - SecondaryPrelims/Title
+: - preface//shortTitle
+
+? - PrimaryPrelims/Number
+  - SecondaryPrelims/Number
+: - preface//docNumber
+
+? - PrimaryPrelims/LongTitle
+  - SecondaryPrelims/LongTitle
+: - preface/longTitle
+
+? - LaidDraft
+: - p[@class='LaidDraft']
+? - MadeDate
+: - p[@class='MadeDate']
+? - LaidDate
+: - p[@class='LaidDate']
+? - ComingIntoForce
+: - container[@name='ComingIntoForce']
+  - p[@class='ComingIntoForce']
+? - ComingIntoForceClauses
+: - p[@class='ComingIntoForceClauses']
+
+? - LaidDraft/Text
+: - p[@class='LaidDraft']/span
+? - MadeDate/Text
+: - p[@class='MadeDate']/span
+? - LaidDate/Text
+: - p[@class='LaidDate']/span
+? - ComingIntoForce/Text
+: - container[@name='ComingIntoForce']/p[not(@class)]
+  - p[@class='ComingIntoForce']/span
+? - ComingIntoForceClauses/Text
+: - p[@class='ComingIntoForceClauses']/span
+
+? - DateOfEnactment
+: - p[@class='DateOfEnactment']
+
+? - DateOfEnactment/DateText
+  - MadeDate/DateText
+  - LaidDate/DateText
+  - ComingIntoForce//DateText
+: - docDate
+
+? - Draft
+: - blockContainer[@class='draft']
+
+? - Draft/Para/Text
+: - blockContainer[@class='draft']/p
+
+? - Subject
+: - block[@name='subject']
+
+? - Subject/Title
+  - Subject/Subtitle
+: - concept
+
+? - PrimaryPreamble
+  - SecondaryPreamble
+: - preamble
+
+? - RoyalPresence
+: - container[@name='RoyalPresence']
+? - RoyalPresence/Para/Text
+: - container[@name='RoyalPresence']/p
+
+
+? - EnactingText
+: - formula[@name='EnactingText']
+
+? - EnactingText/Para/Text
+: - formula[@name='EnactingText']/p
+
+? - Approved
+: - p[@class='approved']
+
+? - Contents
+  - ContentsSchedules
+: - toc
+
+? - Contents/ContentsTitle
+  - ContentsSchedules/ContentsTitle
+  - ContentsPart
+  - ContentsChapter
+  - ContentsPblock
+  - ContentsPsubBlock
+  - ContentsItem
+  - ContentsSubItem
+  - ContentsSchedule
+  - ContentsAppendix
+: - tocItem
+
+? - ContentsNumber
+: - tocItem/inline[@name='tocNum']
+
+? - ContentsTitle[not(parent::Contents)][not(parent::ContentsSchedules)]
+: - inline[@name='tocHeading']
+
+#? - Body
+#: - body
+#  - portionBody
+
+? - Group
+: - hcontainer[@name='group']
+
+? - Part
+: - part
+
+? - Chapter
+: - chapter
+
+? - Pblock
+: - level[@name='cross-heading']
+
+? - PsubBlock
+: - level[@name='sub-heading']
+
+? - P1group[P1][count(P1|P)>1]
+: - hcontainer[@name='P1group']
+
+? - P2group[P2][count(P2|P2para)>1]
+: - hcontainer[@name='P2group']
+
+? - P1
+  # - P1group/P
+  - P1group[P][not(P1)]
+  # - P[not(parent::Body)][not(parent::P1group)][@AltVersionRefs|@RestrictExtent|@RestrictStartDate|@RestrictEndDate]
+  - P2
+  - P2group[P2para][not(P2)]
+  - P3
+  - P4
+  - P5
+  - P6
+  - P7
+: - section
+  - tblock[@class='P1'] # Preamble/IntroductoryText
+  - subsection
+  - tblock[@class='P2'] # Preamble/IntroductoryText
+  - paragraph
+  - tblock[@class='P3'] # Preamble/IntroductoryText
+  - subparagraph
+  - tblock[@class='P4'] # Preamble/IntroductoryText
+  - clause
+  - subclause
+  - point
+  - article
+  - rule
+  - hcontainer[@name='regulation']
+
+? - Body/P
+: - body/hcontainer[@name='wrapper']
+  - mainBody/hcontainer[@name='wrapper']
+
+? - Body/P/Text
+  - Part/P/Text
+  - Chapter/P/Text
+  - Pblock/P/Text # PsubBlock/P/Text ??
+  - P1group/P/Text
+  - P1/P1para/Text
+  - P2group/P2para/Text
+  - P2/P2para/Text
+  - P3/P3para/Text
+  - P4/P4para/Text
+  - P5/P5para/Text
+  - P6/P6para/Text
+  - Signatory[not(ancestor::Schedule)][not(ancestor::Schedules)]/Para/Text
+  - ScheduleBody/P/Text
+  - AppendixBody/P/Text
+  - ExplanatoryNotes/Comment/Para/Text
+  - ExplanatoryNotes/P/Text
+  - EarlierOrders/P/Text
+  - EarlierOrders/Comment/Para/Text
+: - intro/p[not(mod/quotedStructure)]
+  - content/p[not(mod/quotedStructure)]
+  - wrapUp/p[not(mod/quotedStructure)]
+  - tblock[@class='P1']/p
+  - tblock[@class='P2']/p
+  - tblock[@class='P3']/p
+  - tblock[@class='P4']/p
+  - blockContainer[@class='ExplanatoryNotes']/p/authorialNote/p
+  - blockContainer[@class='EarlierOrders']/p/subFlow/p
+  - blockContainer[not(@class)]/p
+
+
+#? - '*[not(ancestor::Contents)][not(self::Body)]/@RestrictExtent'
+#? - Body/@RestrictExtent
+# ? - Legislation/@RestrictExtent
+#   - Legislation[not(@RestrictExtent)]/Body/@RestrictExtent
+#   - Body//*/@RestrictExtent
+#   - Schedules//@RestrictExtent
+#   - Versions//@RestrictExtent
+? - '//@RestrictExtent'
+: - restriction
+
+? - 'Legislation//*/@RestrictStartDate'
+  - 'Legislation//*[not(@RestrictStartDate)]/@RestrictEndDate'
+: - '*/@period'
+
+
+ 
+? - ListItem/Para/Text
+: - item/p[not(mod/quotedStructure)]
+
+? - Pnumber
+  - Body//Number
+  - Schedules//Number
+  - Versions//Number
+: - num[not(parent::item)]
+
+? - Body//Title
+  - Schedules//Title
+  - ExplanatoryNotes//Title
+  - EarlierOrders//Title
+  - Versions//Title
+  - Key
+: - heading
+  - heading/inline[@name='multi-heading'][position() > 1]
+
+# ? -
+# : - inline[@name='multi-heading']
+
+? - Subtitle[not(parent::Subject)]
+: - subheading
+
+? - Correction
+: - container[@name='correction']
+
+? - Correction/Para/Text
+: - container[@name='correction']/p
+
+
+# ? - Body//Text
+#   - Schedules//Text
+# : - body//p
+
+? - BlockText
+: - blockContainer[@class='BlockText']
+
+? - Where
+: - blockContainer[@class='where']
+
+? - BlockText/Para/Text
+  - BlockText/Text
+: - blockContainer[@class='BlockText']/p[not(mod/quotedStructure)]
+
+? - Where/Para/Text
+: - blockContainer[@class='where']/p
+
+? - BlockAmendment
+: - quotedStructure
+
+? - BlockAmendment/Text
+  - BlockAmendment/P/Text
+  - BlockAmendment/Para/Text
+  - BlockAmendment/P1para/Text
+  - BlockAmendment/P2para/Text
+  - BlockAmendment/P3para/Text
+  - BlockAmendment/P4para/Text
+  - BlockAmendment/P5para/Text
+  - BlockAmendment/P6para/Text
+: - quotedStructure/p[not(mod/quotedStructure)]
+ 
+? - InlineAmendment
+: - quotedText
+
+? - AppendText
+: - inline[@name='AppendText']
+
+
+? - OrderedList
+  - UnorderedList
+  - KeyList
+: - blockList
+
+? - ListItem
+: - item
+
+? - Schedules
+: - hcontainer[@name='schedules']
+
+? - Schedule
+: - hcontainer[@name='schedule']
+
+? - Appendix
+: - hcontainer[@name='appendix']
+
+
+? - Citation
+  - CitationSubRef
+: - ref
+  - rref
+
+? - ExternalLink
+  - InternalLink
+: - a
+
+? - Emphasis
+: - i
+
+? - Strong
+: - b
+
+? - Underline
+: - u
+
+? - SmallCaps
+: - inline[@name='smallCaps']
+
+? - Superior
+: - sup
+? - Inferior
+: - sub
+
+# conclusions
+
+? - SignedSection
+: - hcontainer[@name='signatures']
+  - blockContainer[@class='signatures']
+
+? - Signatory[ancestor::Schedule]/Para/Text
+  - Signatory[ancestor::Schedules]/Para/Text
+: - container[@name='signatures']/p
+  - blockContainer[@class='signatures']/p
+
+? - Signee
+: - signature
+
+? - PersonName
+: - person
+
+? - JobTitle
+: - role
+
+? - Department
+: - organization
+
+? - AddressLine
+: - location
+
+? - DateSigned
+: - date[not(@class='seal')]
+
+
+? - Term
+: - term
+
+? - Abbreviation
+  - Acronym
+: - abbr
+
+? - Definition
+: - def
+
+? - Addition
+  - Substitution
+: - ins
+
+? - Repeal
+: - del
+
+# perhaps this should be more strict, not parent:: or grandparent
+# because some figures could be nested within alternate versions of provisions
+? - Figure[not(ancestor::Version)] 
+: - tblock[@class='figure']
+  - block[@name='figure']
+
+? - Image[not(ancestor::Version)]
+  - IncludedDocument
+: - img[not(@class='seal')]
+
+? - LSseal
+: - img[@class='seal']
+  - date[@class='seal']
+  - inline[@name='seal']
+  - marker[@name='seal']
+
+? - Body//processing-instruction('new-line')
+  - Schedules//processing-instruction('new-line')
+: - body//eol
+
+? - processing-instruction('new-page')
+: - eop
+
+? - Tabular
+: - tblock[@class='tabular']
+  - hcontainer[@name='tabular']
+? - 'xhtml:table'
+: - table
+? - 'xhtml:caption'
+: - caption
+? - 'xhtml:tr'
+: - tr
+? - 'xhtml:th'
+: - th
+? - 'xhtml:td'
+: - td
+
+? - Tabular/TableText/Para/Text
+: - tblock[@class='tabular']/p
+
+? - Form
+: - tblock[@class='form']
+
+? - Reference
+: - authorialNote[@placement='right']
+
+? - Formula[math:math]
+  - Span[math:math]
+: - foreign[math:math]
+
+? - 'math:*'
+: - 'math:*'
+
+? - Proviso
+: - inline[@name='proviso']
+
+? - Span[not(math:math)]
+: - span[not(parent::p[@class='LaidDraft'])][not(parent::p[@class='MadeDate'])][not(parent::p[@class='LaidDate'])][not(parent::p[@class=''])][not(parent::p[@class='ComingIntoForce'])][not(parent::p[@class='ComingIntoForceClauses'])]
+
+
+? - ExplanatoryNotes
+: - blockContainer[@class='ExplanatoryNotes']
+
+? - EarlierOrders
+: - blockContainer[@class='EarlierOrders']
+
+? - ExplanatoryNotes/Comment
+  - EarlierOrders/Comment
+: - blockContainer[@class='ExplanatoryNotes']/intro
+  - blockContainer[@class='EarlierOrders']/intro
+
+
+? - '/Legislation//*/@Status'
+: - "*[ends-with(@class,'prospective')]/@class"
+  - "*[ends-with(@class,'repealed')]/@class"
+  - "*[ends-with(@class,'dead')]/@class"
+  - "*[ends-with(@class,'discarded')]/@class"
+
+
+# CLML elements without counterparts in Akoma Ntoso
+---
+
+- SubjectInformation
+
+- Commentaries
+# - Commentary/Para
+- MarginNotes
+# - MarginNote/Para
+- Footnotes
+# - Footnote/Para
+
+- Cover
+- CoverTitle
+- Cover//processing-instruction('new-line')
+
+- Primary
+- Secondary
+
+- IntroductoryText # ???
+- IntroductoryText/P
+- IntroductoryText/P/Text # could we count this? preamble/p is already accounted for below
+
+- EnactingTextOmitted
+
+# - EnactingText/Para
+
+# - P[not(*)] # why?
+
+# - PrimaryPrelims/Para
+# - SecondaryPreamble/Para
+
+- PrimaryPrelims//processing-instruction('new-line')
+- SecondaryPrelims//processing-instruction('new-line')
+
+- Body
+
+- 'x:Rubric'
+
+#- ExplanatoryNotes/P1group/P
+# - P1group[count(P1|P|P2|P2para)=1]
+# - P2group[count(P1|P|P2|P2para)=1]
+
+- Part/P #[not(@AltVersionRefs)][not(@RestrictExtent)][not(@RestrictStartDate)][not(@RestrictEndDate)]
+- Chapter/P #[not(@AltVersionRefs)][not(@RestrictExtent)][not(@RestrictStartDate)][not(@RestrictEndDate)]
+- Pblock/P #[not(@AltVersionRefs)][not(@RestrictExtent)][not(@RestrictStartDate)][not(@RestrictEndDate)]
+- PsubBlock/P #[not(@AltVersionRefs)][not(@RestrictExtent)][not(@RestrictStartDate)][not(@RestrictEndDate)]
+
+- P1group[not(P)][count(P1)=1]
+- P2group[not(P2para)][count(P2)=1]
+
+- P1group/P 
+
+- BlockAmendment/P
+
+- Para
+- P1para
+- P2para
+- P3para
+- P4para
+- P5para
+- P6para
+# - BlockText/Para
+- KeyListItem
+- CoverPara
+- CoverPara/Text
+# - Text
+# - ListItem/Para
+# - Where/Para # is this right?
+- ScheduleBody # ???
+- ScheduleBody/P #[not(@AltVersionRefs)][not(@RestrictExtent)][not(@RestrictStartDate)][not(@RestrictEndDate)]
+- AppendixBody
+- AppendixBody/P #[not(@AltVersionRefs)][not(@RestrictExtent)][not(@RestrictStartDate)][not(@RestrictEndDate)]
+
+- TitleBlock
+
+# - Versions
+# - Versions//*
+# - Resources
+
+# - BlockAmendment/Para
+
+- FootnoteText
+- Footntoes//Text # could count these in meta
+
+- Signatory
+- Address
+- DateSigned/DateText
+
+# - Resources//*
+- processing-instruction('start-line')
+- processing-instruction('soft-new-line') # ???
+# P1group is a real challenge
+# - P1group # ???
+- TableText
+- 'xhtml:colgroup'
+- 'xhtml:col'
+- 'xhtml:thead'
+- 'xhtml:tbody'
+- 'xhtml:tfoot'
+- 'xhtml:th/P'
+- 'xhtml:th/P/Text'
+# - 'xhtml:th/Para'
+- 'xhtml:th/Para/Text'
+- 'xhtml:td/P'
+- 'xhtml:td/P/Text'
+# - 'xhtml:td/Para'
+- 'xhtml:td/Para/Text'
+# - TableText/Para
+# - TableText/Para/Text
+# - 'ERROR_XrefPart'
+# - 'ERROR_XrefChapter'
+# - 'ERROR_Undefined_CenteredHeading'
+
+# maybe we can do better here
+- Versions
+- Version
+- Version//Figure # alt of math
+- Version//Image # alt of math
+
+- ExternalVersion
+- Resources
+- Resource
+- ExplanatoryNotes/P
+- EarlierOrders/P
+# - ExplanatoryNotes/P/Para
+# - EarlierOrders/P/Para
+# - Footnotes/P/Para
+# - Signatory/P/Para
+
+- Character[@Name='DotPadding']
+- Character[@Name='EmSpace']
+- Character[@Name='EnSpace']
+- Character[@Name='LinePadding']
+- Character[@Name='NonBreakingSpace']
+- Character[@Name='Minus']
+- Character[@Name='ThinSpace']
+
+
+- FragmentNumber
+- FragmentTitle
+
+
+# attributes
+
+- 'Legislation//*[@RestrictStartDate]/@RestrictEndDate'
+
+
+- processing-instruction('br') # because <akn:br> is too hard to count
+
+- processing-instruction('change')
+- processing-instruction('amendment')
+- processing-instruction('SPOchange')
+- processing-instruction('commlink')
+- processing-instruction('xm-replace_text')
+
+
+
+# Akoma Ntoso elements without counterparts in CLML
+---
+- akomaNtoso
+
+- identification
+- lifecycle
+- eventRef
+- analysis
+- analysis//*[not(self::restriction)]
+- temporalData
+- temporalGroup
+- timeInterval
+- references
+- notes
+- proprietary
+
+- FRBRWork
+- FRBRExpression
+- FRBRManifestation
+- FRBRthis
+- FRBRuri
+- FRBRalias
+- FRBRdate
+- FRBRauthor
+- FRBRlanguage
+- FRBRcountry
+- FRBRsubtype
+- FRBRnumber
+- FRBRname
+- FRBRprescriptive
+- FRBRauthoritative
+- FRBRformat
+
+- original
+- activeRef
+- passiveRef
+- publication
+- classification
+- keyword
+
+- TLCLocation
+- TLCOrganization
+- TLCRole
+- TLCPerson
+- TLCTerm
+- TLCConcept
+
+- coverPage
+# - coverPage/p[not(contains(@class,'contents'))]
+- coverPage//eol
+- preface/p[not(@class)]
+- preface/p[@class='title'] # could count
+- preface/p[@class='number'] # could count
+- preamble/p
+- preface//eol
+- preamble//eol
+
+- body
+- portionBody
+
+- authorialNote[@placement='right']/p
+
+- blockContainer[@class='ExplanatoryNotes']/p
+- blockContainer[@class='ExplanatoryNotes']/p/authorialNote
+- blockContainer[@class='EarlierOrders']/p
+# - blockContainer[@class='EarlierOrders']/p/subFlow
+
+- docType
+- longTitle/p
+- hcontainer[@name='wrapper'][not(parent::body)][not(parent::mainBody)]
+- block[@name='wrapper']
+
+- intro[not(parent::blockContainer[@class='ExplanatoryNotes'])][not(parent::blockContainer[@class='EarlierOrders'])]
+- content
+- p[mod/quotedStructure]
+- wrapUp
+
+- blockContainer[not(@class)]
+
+- heading/inline[@name='multi-heading'][position() = 1]
+
+- br
+
+- item/num
+
+- tblock[@class='figure']/p
+
+- th/p
+- td/p[not(mod/quotedStructure)]
+- subFlow
+- subFlow[not(../..[self::blockContainer][@class='EarlierOrders'])]/p # for td/P/Text
+- mod # ???
+- conclusions
+
+- block[@name='signature']
+- container[@name='signature']//p
+- block[@name='included-document']
+
+- "*[not(ends-with(@class,'prospective'))][not(ends-with(@class,'repealed'))][not(ends-with(@class,'dead'))][not(ends-with(@class,'discarded'))]/@class"
+
+- noteRef[contains(@class, 'attribute')] # this is not ideal
+
+
+# - foreign[not(math:math)]
