@@ -61,9 +61,10 @@
 </xsl:template>
 
 <xsl:template match="EUPart | EUTitle | EUChapter | EUSection | EUSubsection">
-	<hcontainer name="{ local-name() }">
+	<xsl:element name="{ lower-case(substring(local-name(), 3)) }">
+		<xsl:apply-templates select="@id" />
 		<xsl:apply-templates />
-	</hcontainer>
+	</xsl:element>
 </xsl:template>
 
 <xsl:template match="Division">
@@ -71,5 +72,32 @@
 		<xsl:apply-templates />
 	</level>
 </xsl:template>
+
+<xsl:function name="clml2akn:eu-provision-name" as="xs:string">
+	<xsl:param name="e" as="element()" />
+	<xsl:choose>
+		<xsl:when test="$e/self::P1">article</xsl:when>
+		<xsl:when test="$e/self::P2">paragraph</xsl:when>
+	</xsl:choose>
+</xsl:function>
+
+
+<!-- signatures -->
+
+<xsl:template match="EURetained//Signee">
+	<blockContainer>
+		<xsl:apply-templates />
+	</blockContainer>
+</xsl:template>
+
+
+<!-- inline -->
+
+<xsl:template match="Uppercase">
+	<inline name="uppercase">
+		<xsl:apply-templates />
+	</inline>
+</xsl:template>
+
 
 </xsl:transform>

@@ -15,7 +15,7 @@
 	xmlns:math="http://www.w3.org/1998/Math/MathML"
 	xmlns:fo="http://www.w3.org/1999/XSL/Format"
 	xmlns:clml2akn="http://clml2akn.mangiafico.com/"
-	exclude-result-prefixes="xs ukl ukm atom html math fo clml2akn">
+	exclude-result-prefixes="xs ukl ukm dc atom html math fo clml2akn">
 
 <xsl:output method="xml" version="1.0" encoding="utf-8" omit-xml-declaration="no" indent="yes" />
 <xsl:strip-space elements="*" />
@@ -57,7 +57,14 @@
 
 <xsl:variable name="doc-uri" as="xs:string">
 	<xsl:variable name="base" as="xs:string">
-		<xsl:value-of select="concat('http://www.legislation.gov.uk/id/', substring-after($expr-uri, 'http://www.legislation.gov.uk/'))" />
+		<xsl:choose>
+			<xsl:when test="starts-with($expr-uri, 'http://www.legislation.gov.uk/id/')">
+				<xsl:value-of select="$expr-uri" />
+			</xsl:when>
+			<xsl:otherwise>
+				<xsl:value-of select="concat('http://www.legislation.gov.uk/id/', substring-after($expr-uri, 'http://www.legislation.gov.uk/'))" />
+			</xsl:otherwise>
+		</xsl:choose>
 	</xsl:variable>
 	<xsl:analyze-string select="$base" regex="(/enacted)? ( /\d{{4}}-\d{{2}}-\d{{2}} | /made | /welsh )$" flags="x">
 		<xsl:non-matching-substring><xsl:value-of select="." /></xsl:non-matching-substring>
@@ -72,7 +79,14 @@
 
 <xsl:variable name="this-uri" as="xs:string">
 	<xsl:variable name="base" as="xs:string">
-		<xsl:value-of select="concat('http://www.legislation.gov.uk/id/', substring-after($expr-this, 'http://www.legislation.gov.uk/'))" />
+		<xsl:choose>
+			<xsl:when test="starts-with($expr-uri, 'http://www.legislation.gov.uk/id/')">
+				<xsl:value-of select="$expr-uri" />
+			</xsl:when>
+			<xsl:otherwise>
+				<xsl:value-of select="concat('http://www.legislation.gov.uk/id/', substring-after($expr-uri, 'http://www.legislation.gov.uk/'))" />
+			</xsl:otherwise>
+		</xsl:choose>
 	</xsl:variable>
 	<xsl:analyze-string select="$base" regex="(/enacted)? ( /\d{{4}}-\d{{2}}-\d{{2}} | /made | /welsh )$" flags="x">
 		<xsl:non-matching-substring><xsl:value-of select="." /></xsl:non-matching-substring>
@@ -779,7 +793,14 @@ http://www.opsi.gov.uk/si/si-practice.doc
 
 <xsl:function name="clml2akn:provision-name" as="xs:string">
 	<xsl:param name="e" as="element()" />
-	<xsl:value-of select="clml2akn:provision-name($e, local-name($e))" />
+	<xsl:choose>
+		<xsl:when test="exists($e/ancestor::EURetained)">
+			<xsl:value-of select="clml2akn:eu-provision-name($e)" />
+		</xsl:when>
+		<xsl:otherwise>
+			<xsl:value-of select="clml2akn:provision-name($e, local-name($e))" />
+		</xsl:otherwise>
+	</xsl:choose>
 </xsl:function>
 
 <!-- When a P1group has a P as a child, or when a P2group has a P2para as a direct child (e.g., ukpga/2005/4),
@@ -947,13 +968,13 @@ helper template is called from the mapping templates for <num>, <heading> and <s
 
 <xsl:template match="Number | Pnumber">
 	<num>
-		<xsl:if test="@PuncBefore != '' or @PuncAfter != ''">
+<!-- 		<xsl:if test="@PuncBefore != '' or @PuncAfter != ''">
 			<xsl:attribute name="title">
 				<xsl:value-of select="@PuncBefore" />
 				<xsl:value-of select="." />
 				<xsl:value-of select="@PuncAfter" />
 			</xsl:attribute>
-		</xsl:if>
+		</xsl:if> -->
 		<xsl:apply-templates />
 		<xsl:call-template name="reference" />
 	</num>
@@ -1140,7 +1161,7 @@ helper template is called from the mapping templates for <num>, <heading> and <s
 				</xsl:choose>
 			</xsl:variable>
 			<num>
-				<xsl:attribute name="title">
+<!-- 				<xsl:attribute name="title">
 					<xsl:choose>
 						<xsl:when test="../@Decoration = 'parens'">(</xsl:when>
 						<xsl:when test="../@Decoration = 'parenRight'"></xsl:when>
@@ -1160,7 +1181,7 @@ helper template is called from the mapping templates for <num>, <heading> and <s
 						<xsl:when test="../@Decoration = 'colon'">:</xsl:when>
 						<xsl:otherwise></xsl:otherwise>
 					</xsl:choose>
-				</xsl:attribute>
+				</xsl:attribute> -->
 				<xsl:value-of select="$num" />
 			</num>
 		</xsl:if>
@@ -1671,6 +1692,15 @@ helper template is called from the mapping templates for <num>, <heading> and <s
 		<xsl:when test="@Name = 'Minus'">&#x2212;</xsl:when>
 		<xsl:when test="@Name = 'ThinSpace'">&#x2009;</xsl:when>
 	</xsl:choose>
+</xsl:template>
+
+
+<!-- attributes -->
+
+<xsl:template match="@id">
+	<xsl:attribute name="eId">
+		<xsl:value-of select="." />
+	</xsl:attribute>
 </xsl:template>
 
 

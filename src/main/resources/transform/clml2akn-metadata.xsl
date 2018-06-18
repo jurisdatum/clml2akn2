@@ -30,7 +30,7 @@
 	<meta>
 		<identification source="#source">
 
-			<xsl:variable name="work-date" select="ukm:PrimaryMetadata/ukm:EnactmentDate/@Date | ukm:SecondaryMetadata/ukm:Made/@Date" />
+			<xsl:variable name="work-date" select="ukm:PrimaryMetadata/ukm:EnactmentDate/@Date | ukm:SecondaryMetadata/ukm:Made/@Date | ukm:EUMetadata/ukm:EnactmentDate/@Date" />
 			<FRBRWork>
 				<FRBRthis value="{$this-uri}" />
 				<FRBRuri value="{$doc-uri}" />
@@ -39,41 +39,49 @@
 					<xsl:attribute name="name">
 						<xsl:choose>
 							<xsl:when test="ukm:*/ukm:DocumentClassification/ukm:DocumentCategory/@Value = 'primary'">enacted</xsl:when>
-							<xsl:otherwise>made</xsl:otherwise>
+							<xsl:when test="ukm:*/ukm:DocumentClassification/ukm:DocumentCategory/@Value = 'secondary'">made</xsl:when>
+							<xsl:when test="ukm:*/ukm:DocumentClassification/ukm:DocumentCategory/@Value = 'euretained'">adopted</xsl:when>
 						</xsl:choose>
 					</xsl:attribute>
 				</FRBRdate>
 				<FRBRauthor>
 					<xsl:attribute name="href">
-						<xsl:text>http://www.legislation.gov.uk/id/</xsl:text>
 						<xsl:choose>
-							<xsl:when test="$ukm-doctype = 'EnglandAct'">legislature/EnglishParliament</xsl:when>
-							<xsl:when test="$ukm-doctype = 'GreatBritainAct'">legislature/ParliamentOfGreatBritain</xsl:when>
-							<xsl:when test="$ukm-doctype = 'IrelandAct'">legislature/OldIrishParliament</xsl:when>
-							<xsl:when test="$ukm-doctype = 'NorthernIrelandAct'">legislature/NorthernIrelandAssembly</xsl:when>
-							<xsl:when test="$ukm-doctype = 'NorthernIrelandAssemblyMeasure'">legislature/NorthernIrelandAssembly</xsl:when>
-							<xsl:when test="$ukm-doctype = 'NorthernIrelandParliamentAct'">legislature/NorthernIrelandParliament  </xsl:when>
-							<xsl:when test="$ukm-doctype = 'NorthernIrelandOrderInCouncil'">government/uk</xsl:when>
-							<xsl:when test="$ukm-doctype = 'NorthernIrelandDraftOrderInCouncil'">government/uk</xsl:when>
-							<xsl:when test="$ukm-doctype = 'NorthernIrelandStatutoryRule'">government/northern-ireland</xsl:when>
-							<xsl:when test="$ukm-doctype = 'NorthernIrelandDraftStatutoryRule'">government/northern-ireland</xsl:when>
-							<xsl:when test="$ukm-doctype = 'ScottishAct'">legislature/ScottishParliament</xsl:when>
-							<xsl:when test="$ukm-doctype = 'ScottishOldAct'">legislature/OldScottishParliament</xsl:when>
-							<xsl:when test="$ukm-doctype = 'ScottishStatutoryInstrument'">government/scotland</xsl:when>
-							<xsl:when test="$ukm-doctype = 'ScottishDraftStatutoryInstrument'">government/scotland</xsl:when>
-							<xsl:when test="$ukm-doctype = 'UnitedKingdomChurchInstrument'">legislature/GeneralSynod</xsl:when>
-							<xsl:when test="$ukm-doctype = 'UnitedKingdomChurchMeasure'">legislature/GeneralSynod</xsl:when>
-							<xsl:when test="$ukm-doctype = 'UnitedKingdomPrivateAct'">legislature/UnitedKingdomParliament</xsl:when>
-							<xsl:when test="$ukm-doctype = 'UnitedKingdomPublicGeneralAct'">legislature/UnitedKingdomParliament</xsl:when>
-							<xsl:when test="$ukm-doctype = 'UnitedKingdomLocalAct'">legislature/UnitedKingdomParliament</xsl:when>
-							<xsl:when test="$ukm-doctype = 'UnitedKingdomMinisterialOrder'">government/uk</xsl:when>
-							<xsl:when test="$ukm-doctype = 'UnitedKingdomStatutoryInstrument'">government/uk</xsl:when>
-							<xsl:when test="$ukm-doctype = 'UnitedKingdomDraftStatutoryInstrument'">government/uk</xsl:when>
-							<xsl:when test="$ukm-doctype = 'WelshAssemblyMeasure'">legislature/NationalAssemblyForWales</xsl:when>
-							<xsl:when test="$ukm-doctype = 'WelshNationalAssemblyAct'">legislature/NationalAssemblyForWales</xsl:when>
-							<xsl:when test="$ukm-doctype = 'WelshStatutoryInstrument'">government/wales</xsl:when>
-							<xsl:when test="$ukm-doctype = 'WelshDraftStatutoryInstrument'">government/wales</xsl:when>
-							<xsl:when test="$ukm-doctype = 'UnitedKingdomMinisterialDirection'">government/uk</xsl:when>
+							<xsl:when test="starts-with($ukm-doctype, 'EuropeanUnion')">
+								<xsl:value-of select="ukm:EUMetadata/ukm:CreatedBy[1]/@URI" />
+							</xsl:when>
+							<xsl:otherwise>
+								<xsl:text>http://www.legislation.gov.uk/id/</xsl:text>
+								<xsl:choose>
+									<xsl:when test="$ukm-doctype = 'EnglandAct'">legislature/EnglishParliament</xsl:when>
+									<xsl:when test="$ukm-doctype = 'GreatBritainAct'">legislature/ParliamentOfGreatBritain</xsl:when>
+									<xsl:when test="$ukm-doctype = 'IrelandAct'">legislature/OldIrishParliament</xsl:when>
+									<xsl:when test="$ukm-doctype = 'NorthernIrelandAct'">legislature/NorthernIrelandAssembly</xsl:when>
+									<xsl:when test="$ukm-doctype = 'NorthernIrelandAssemblyMeasure'">legislature/NorthernIrelandAssembly</xsl:when>
+									<xsl:when test="$ukm-doctype = 'NorthernIrelandParliamentAct'">legislature/NorthernIrelandParliament  </xsl:when>
+									<xsl:when test="$ukm-doctype = 'NorthernIrelandOrderInCouncil'">government/uk</xsl:when>
+									<xsl:when test="$ukm-doctype = 'NorthernIrelandDraftOrderInCouncil'">government/uk</xsl:when>
+									<xsl:when test="$ukm-doctype = 'NorthernIrelandStatutoryRule'">government/northern-ireland</xsl:when>
+									<xsl:when test="$ukm-doctype = 'NorthernIrelandDraftStatutoryRule'">government/northern-ireland</xsl:when>
+									<xsl:when test="$ukm-doctype = 'ScottishAct'">legislature/ScottishParliament</xsl:when>
+									<xsl:when test="$ukm-doctype = 'ScottishOldAct'">legislature/OldScottishParliament</xsl:when>
+									<xsl:when test="$ukm-doctype = 'ScottishStatutoryInstrument'">government/scotland</xsl:when>
+									<xsl:when test="$ukm-doctype = 'ScottishDraftStatutoryInstrument'">government/scotland</xsl:when>
+									<xsl:when test="$ukm-doctype = 'UnitedKingdomChurchInstrument'">legislature/GeneralSynod</xsl:when>
+									<xsl:when test="$ukm-doctype = 'UnitedKingdomChurchMeasure'">legislature/GeneralSynod</xsl:when>
+									<xsl:when test="$ukm-doctype = 'UnitedKingdomPrivateAct'">legislature/UnitedKingdomParliament</xsl:when>
+									<xsl:when test="$ukm-doctype = 'UnitedKingdomPublicGeneralAct'">legislature/UnitedKingdomParliament</xsl:when>
+									<xsl:when test="$ukm-doctype = 'UnitedKingdomLocalAct'">legislature/UnitedKingdomParliament</xsl:when>
+									<xsl:when test="$ukm-doctype = 'UnitedKingdomMinisterialOrder'">government/uk</xsl:when>
+									<xsl:when test="$ukm-doctype = 'UnitedKingdomStatutoryInstrument'">government/uk</xsl:when>
+									<xsl:when test="$ukm-doctype = 'UnitedKingdomDraftStatutoryInstrument'">government/uk</xsl:when>
+									<xsl:when test="$ukm-doctype = 'WelshAssemblyMeasure'">legislature/NationalAssemblyForWales</xsl:when>
+									<xsl:when test="$ukm-doctype = 'WelshNationalAssemblyAct'">legislature/NationalAssemblyForWales</xsl:when>
+									<xsl:when test="$ukm-doctype = 'WelshStatutoryInstrument'">government/wales</xsl:when>
+									<xsl:when test="$ukm-doctype = 'WelshDraftStatutoryInstrument'">government/wales</xsl:when>
+									<xsl:when test="$ukm-doctype = 'UnitedKingdomMinisterialDirection'">government/uk</xsl:when>
+								</xsl:choose>
+							</xsl:otherwise>
 						</xsl:choose>
 					</xsl:attribute>
 				</FRBRauthor>
@@ -107,6 +115,7 @@
 							<xsl:when test="$ukm-doctype = 'WelshStatutoryInstrument'">GB-WLS</xsl:when>
 							<xsl:when test="$ukm-doctype = 'WelshDraftStatutoryInstrument'">GB-WLS</xsl:when>
 							<xsl:when test="$ukm-doctype = 'UnitedKingdomMinisterialDirection'">GB-UKM</xsl:when>
+							<xsl:when test="starts-with($ukm-doctype, 'EuropeanUnion')">EU</xsl:when>
 							<xsl:otherwise>GB-UKM</xsl:otherwise>
 						</xsl:choose>
 					</xsl:attribute>
@@ -117,8 +126,8 @@
 				<FRBRnumber value="{ukm:*/ukm:Number/@Value}" />
 				<FRBRname>
 					<xsl:attribute name="value">
-						<xsl:variable name="year" select="ukm:PrimaryMetadata/ukm:Year/@Value | ukm:SecondaryMetadata/ukm:Year/@Value" />
-						<xsl:variable name="num" select="ukm:PrimaryMetadata/ukm:Number/@Value | ukm:SecondaryMetadata/ukm:Number/@Value" />
+						<xsl:variable name="year" select="ukm:PrimaryMetadata/ukm:Year/@Value | ukm:SecondaryMetadata/ukm:Year/@Value | ukm:EUMetadata/ukm:Year/@Value" />
+						<xsl:variable name="num" select="ukm:PrimaryMetadata/ukm:Number/@Value | ukm:SecondaryMetadata/ukm:Number/@Value | ukm:EUMetadata/ukm:Number/@Value" />
 						<xsl:choose>
 							<xsl:when test="$ukm-doctype = 'EnglandAct'">
 								<xsl:value-of select="concat($year, ' c. ', $num)" />
@@ -213,6 +222,15 @@
 									</xsl:otherwise>
 								</xsl:choose>
 							</xsl:when>
+							<xsl:when test="$ukm-doctype = 'EuropeanUnionRegulation'">
+								<xsl:value-of select="concat('Regulation (EU) ', $year, '/', $num)" />
+							</xsl:when>
+							<xsl:when test="$ukm-doctype = 'EuropeanUnionDecision'">
+								<xsl:value-of select="concat('Decision (EU) ', $year, '/', $num)" />
+							</xsl:when>
+							<xsl:when test="$ukm-doctype = 'EuropeanUnionDirective'">
+								<xsl:value-of select="concat('Directive (EU) ', $year, '/', $num)" />
+							</xsl:when>
 							<xsl:otherwise>
 								<xsl:value-of select="concat($year, ' c. ', $num)" />
 							</xsl:otherwise>
@@ -237,7 +255,8 @@
 						<xsl:choose>
 							<xsl:when test="dct:valid">validFrom</xsl:when>
 							<xsl:when test="ukm:*/ukm:DocumentClassification/ukm:DocumentCategory/@Value = 'primary'">enacted</xsl:when>
-							<xsl:otherwise>made</xsl:otherwise>
+							<xsl:when test="ukm:*/ukm:DocumentClassification/ukm:DocumentCategory/@Value = 'secondary'">made</xsl:when>
+							<xsl:when test="ukm:*/ukm:DocumentClassification/ukm:DocumentCategory/@Value = 'euretained'">adopted</xsl:when>
 						</xsl:choose>
 					</xsl:attribute>
 				</FRBRdate>
@@ -576,9 +595,19 @@
 </xsl:template>
 
 <xsl:template match="/Legislation/ukm:Metadata//*">
-	<xsl:element name="{name()}">
-		<xsl:copy-of select="@*"/> 
-		<xsl:apply-templates select="node()" />
+	<xsl:variable name="name" as="xs:string">
+		<xsl:choose>
+			<xsl:when test="self::ukm:*">
+				<xsl:value-of select="concat('ukm:', local-name())" />
+			</xsl:when>
+			<xsl:otherwise>
+				<xsl:value-of select="name()" />
+			</xsl:otherwise>
+		</xsl:choose>
+	</xsl:variable>
+	<xsl:element name="{ $name }">
+		<xsl:copy-of select="@*" />
+		<xsl:apply-templates />
 	</xsl:element>
 </xsl:template>
 
