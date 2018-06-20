@@ -68,9 +68,9 @@
 </xsl:template>
 
 <xsl:template match="Division">
-	<level>
-		<xsl:apply-templates />
-	</level>
+	<xsl:call-template name="hierarchy">
+		<xsl:with-param name="name" select="'level'" />
+	</xsl:call-template>
 </xsl:template>
 
 <xsl:function name="clml2akn:eu-provision-name" as="xs:string">
