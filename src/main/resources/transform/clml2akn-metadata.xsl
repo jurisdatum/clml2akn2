@@ -308,6 +308,9 @@
 			<xsl:for-each select="ukm:SecondaryMetadata/ukm:ComingIntoForce/ukm:DateTime">
 				<eventRef date="{@Date}" eId="coming-into-force-date-{position()}" source="#source" />
 			</xsl:for-each>
+			<xsl:if test="ukm:EUMetadata/ukm:EnactmentDate">
+				<eventRef date="{ukm:EUMetadata/ukm:EnactmentDate/@Date}" type="generation" eId="enacted-date" source="#source" />
+			</xsl:if>
 
 			<!-- adds an eventRef element for each date in a dc:hasVersion atom link -->
 			<xsl:for-each select="atom:link[@rel='http://purl.org/dc/terms/hasVersion']">
