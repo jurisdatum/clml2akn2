@@ -7,6 +7,7 @@
 	xpath-default-namespace="http://www.legislation.gov.uk/namespaces/legislation"
 	xmlns:xsl="http://www.w3.org/1999/XSL/Transform"
 	xmlns:xs="http://www.w3.org/2001/XMLSchema"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
 	xmlns:ukl="http://www.legislation.gov.uk/namespaces/legislation"
 	xmlns:ukm="http://www.legislation.gov.uk/namespaces/metadata"
 	xmlns:dc="http://purl.org/dc/elements/1.1/"
@@ -23,6 +24,9 @@
 <xsl:include href="clml2akn-metadata.xsl" />
 <xsl:include href="clml2akn-eu.xsl" />
 
+<xsl:variable name="namespace" as="xs:string" select="'http://docs.oasis-open.org/legaldocml/ns/akn/3.0'" />
+<xsl:variable name="schema-location" as="xs:string" select="'http://docs.oasis-open.org/legaldocml/akn-core/v1.0/cos01/part2-specs/schemas/akomantoso30.xsd'" />
+<!-- https://raw.githubusercontent.com/oasis-open/legaldocml-akomantoso/master/TemporaryRelease20170330Final/akomantoso30.xsd -->
 
 <!-- keys -->
 
@@ -206,7 +210,9 @@
 <!-- main templates -->
 
 <xsl:template match="/">
-	<akomaNtoso><xsl:apply-templates /></akomaNtoso>
+	<akomaNtoso xsi:schemaLocation="{ $namespace } { $schema-location }">
+		<xsl:apply-templates />
+	</akomaNtoso>
 </xsl:template>
 
 <xsl:template match="/Legislation">
