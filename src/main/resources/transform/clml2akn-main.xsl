@@ -569,6 +569,7 @@ follows the element immediately with any alternative version(s)
 		
 		<xsl:variable name="subs" select="Part | Chapter | Pblock | PsubBlock |
 			P1 | P1group | P2 | P2group | P3 | P4 | P5 | P6 |
+			EUPart | EUTitle | EUChapter | EUSection | EUSubsection | Division |
 			$paras/Part | $paras/Chapter | $paras/Pblock | $paras/PsubBlock |
 			$paras/P1 | $paras/P1group | $paras/P2 | $paras/P2group |
 			$paras/P3 | $paras/P4 | $paras/P5 | $paras/P6" />

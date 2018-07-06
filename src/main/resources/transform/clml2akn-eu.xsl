@@ -61,10 +61,9 @@
 </xsl:template>
 
 <xsl:template match="EUPart | EUTitle | EUChapter | EUSection | EUSubsection">
-	<xsl:element name="{ lower-case(substring(local-name(), 3)) }">
-		<xsl:apply-templates select="@id" />
-		<xsl:apply-templates />
-	</xsl:element>
+	<xsl:call-template name="hierarchy">
+		<xsl:with-param name="name" select="lower-case(substring(local-name(), 3))" />
+	</xsl:call-template>
 </xsl:template>
 
 <xsl:template match="Division">
