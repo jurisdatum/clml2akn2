@@ -1273,7 +1273,8 @@ helper template is called from the mapping templates for <num>, <heading> and <s
 			<xsl:when test="Emphasis | Strong | Underline | SmallCaps | Abbreviation | Acronym | Addition | Repeal | Substitution | Citation">
 				<p><xsl:apply-templates /></p>
 			</xsl:when>
-			<xsl:when test="Part | Chapter | Pblock | PsubBlock | P1 | P1group | P2 | P2group | P3 | P4 | P5 | P6">
+			<xsl:when test="Part | Chapter | Pblock | PsubBlock | P1 | P1group | P2 | P2group | P3 | P4 | P5 | P6 |
+				EUPart | EUTitle | EUChapter | EUSection | EUSubsection | Division">
 				<p>
 					<subFlow name="wrapper">
 						<xsl:apply-templates />
