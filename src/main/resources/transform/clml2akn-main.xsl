@@ -1271,7 +1271,7 @@ helper template is called from the mapping templates for <num>, <heading> and <s
 			<xsl:when test="Para">
 				<xsl:apply-templates />
 			</xsl:when>
-			<xsl:when test="Emphasis | Strong | Underline | SmallCaps | Abbreviation | Acronym | Addition | Repeal | Substitution | Citation | Span | Image">
+			<xsl:when test="Emphasis | Strong | Underline | SmallCaps | Abbreviation | Acronym | Addition | Repeal | Substitution | Citation | Span">
 				<p><xsl:apply-templates /></p>
 			</xsl:when>
 			<xsl:when test="Part | Chapter | Pblock | PsubBlock | P1 | P1group | P2 | P2group | P3 | P4 | P5 | P6 |
@@ -1287,6 +1287,12 @@ helper template is called from the mapping templates for <num>, <heading> and <s
 			</xsl:otherwise>
 		</xsl:choose>
 	</xsl:element>
+</xsl:template>
+
+<xsl:template match="html:td/Image">
+	<p>
+		<xsl:next-match />
+	</p>
 </xsl:template>
 
 
