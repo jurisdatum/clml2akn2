@@ -1265,6 +1265,14 @@ helper template is called from the mapping templates for <num>, <heading> and <s
 			<xsl:attribute name="style"><xsl:value-of select="$style-attrs" separator=";" /></xsl:attribute>
 		</xsl:if>
 		<xsl:choose>
+			<xsl:when test="Part | Chapter | Pblock | PsubBlock | P1 | P1group | P2 | P2group | P3 | P4 | P5 | P6 |
+				EUPart | EUTitle | EUChapter | EUSection | EUSubsection | Division">
+				<p>
+					<subFlow name="wrapper">
+						<xsl:apply-templates />
+					</subFlow>
+				</p>
+			</xsl:when>
 			<xsl:when test="text() | Character">
 				<p><xsl:apply-templates /></p>
 			</xsl:when>
@@ -1273,14 +1281,6 @@ helper template is called from the mapping templates for <num>, <heading> and <s
 			</xsl:when>
 			<xsl:when test="Emphasis | Strong | Underline | SmallCaps | Abbreviation | Acronym | Addition | Repeal | Substitution | Citation | Span">
 				<p><xsl:apply-templates /></p>
-			</xsl:when>
-			<xsl:when test="Part | Chapter | Pblock | PsubBlock | P1 | P1group | P2 | P2group | P3 | P4 | P5 | P6 |
-				EUPart | EUTitle | EUChapter | EUSection | EUSubsection | Division">
-				<p>
-					<subFlow name="wrapper">
-						<xsl:apply-templates />
-					</subFlow>
-				</p>
 			</xsl:when>
 			<xsl:otherwise>
 				<xsl:apply-templates />
@@ -1409,6 +1409,23 @@ helper template is called from the mapping templates for <num>, <heading> and <s
 		</xsl:otherwise>
 	</xsl:choose>
 </xsl:template>
+
+<xsl:template match="ScheduleBody/Figure">
+	<xsl:param name="wrap" as="xs:boolean" select="false()" />
+	<xsl:choose>
+		<xsl:when test="$wrap">
+			<hcontainer name="wrapper">
+				<content>
+					<xsl:next-match />
+				</content>
+			</hcontainer>
+		</xsl:when>
+		<xsl:otherwise>
+			<xsl:next-match />
+		</xsl:otherwise>
+	</xsl:choose>
+</xsl:template>
+
 
 
 <!-- conclusions -->
