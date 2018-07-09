@@ -1051,7 +1051,16 @@ helper template is called from the mapping templates for <num>, <heading> and <s
 					<xsl:attribute name="startQuote"><xsl:text>&#8216;</xsl:text></xsl:attribute>
 					<xsl:attribute name="endQuote"><xsl:text>&#8217;</xsl:text></xsl:attribute>			
 				</xsl:if>
-				<xsl:apply-templates />
+				<xsl:choose>
+					<xsl:when test="ListItem">
+						<blockList>
+							<xsl:apply-templates />
+						</blockList>
+					</xsl:when>
+					<xsl:otherwise>
+						<xsl:apply-templates />
+					</xsl:otherwise>
+				</xsl:choose>
 			</quotedStructure>
 		</mod>
 		<xsl:if test="following-sibling::*[1][self::AppendText]">
@@ -1143,7 +1152,7 @@ helper template is called from the mapping templates for <num>, <heading> and <s
 		<xsl:if test="$key">
 			<heading><xsl:apply-templates select="$key" /></heading>
 		</xsl:if>
-		<xsl:if test="parent::OrderedList">
+		<xsl:if test="parent::OrderedList or @NumberOverride">
 			<xsl:variable name="num">
 				<xsl:choose>
 					<xsl:when test="@NumberOverride">
