@@ -60,6 +60,27 @@
 	</preamble>
 </xsl:template>
 
+<xsl:template match="EUPreamble/CommentaryRef[following-sibling::*[1][self::P][Text]]">
+	<xsl:param name="force" as="xs:boolean" select="false()" />
+	<xsl:choose>
+		<xsl:when test="$force">
+			<xsl:next-match />
+		</xsl:when>
+		<xsl:otherwise />
+	</xsl:choose>
+</xsl:template>
+<xsl:template match="EUPreamble/P[preceding-sibling::*[1][self::CommentaryRef]]/Text">
+	<p>
+		<xsl:apply-templates select="parent::P/preceding-sibling::*[1]">
+			<xsl:with-param name="force" select="true()" />
+		</xsl:apply-templates>
+		<xsl:apply-templates />
+	</p>
+</xsl:template>
+
+
+<!-- structure -->
+
 <xsl:template match="EUPart | EUTitle | EUChapter | EUSection | EUSubsection">
 	<xsl:call-template name="hierarchy">
 		<xsl:with-param name="name" select="lower-case(substring(local-name(), 3))" />
