@@ -1410,7 +1410,7 @@ helper template is called from the mapping templates for <num>, <heading> and <s
 	</xsl:choose>
 </xsl:template>
 
-<xsl:template match="ScheduleBody/Figure">
+<xsl:template match="ScheduleBody/Figure | AppendixBody/Figure">
 	<xsl:param name="wrap" as="xs:boolean" select="false()" />
 	<xsl:choose>
 		<xsl:when test="$wrap">
