@@ -81,6 +81,15 @@
 </xsl:function>
 
 
+<!--  -->
+
+<xsl:template match="ListItem/Division[@Type='Annotation']">
+	<tblock class="annotation">
+		<xsl:apply-templates />
+	</tblock>
+</xsl:template>
+
+
 <!-- signatures -->
 
 <xsl:template match="EURetained//Signee">
