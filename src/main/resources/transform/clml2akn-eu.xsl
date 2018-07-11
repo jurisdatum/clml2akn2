@@ -46,12 +46,17 @@
 	</tblock>
 </xsl:template>
 
-<xsl:template match="MultilineTitle">
+<xsl:template match="EUPrelims/MultilineTitle">
 	<preface>
 		<longTitle>
 			<xsl:apply-templates />
 		</longTitle>
 	</preface>
+</xsl:template>
+<xsl:template match="MultilineTitle">
+	<longTitle>
+		<xsl:apply-templates />
+	</longTitle>
 </xsl:template>
 
 <xsl:template match="EUPreamble">
