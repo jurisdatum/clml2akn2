@@ -109,8 +109,13 @@
 
 <!--  -->
 
-<xsl:template match="ListItem/Division[@Type='Annotation']">
-	<tblock class="annotation">
+<xsl:template match="ListItem/Division">
+	<tblock>
+		<xsl:if test="@Type">
+			<xsl:attribute name="class">
+				<xsl:value-of select="lower-case(@Type)" />
+			</xsl:attribute>
+		</xsl:if>
 		<xsl:apply-templates />
 	</tblock>
 </xsl:template>
