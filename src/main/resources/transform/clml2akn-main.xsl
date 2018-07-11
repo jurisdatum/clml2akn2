@@ -1288,7 +1288,7 @@ helper template is called from the mapping templates for <num>, <heading> and <s
 			<xsl:when test="Para">
 				<xsl:apply-templates />
 			</xsl:when>
-			<xsl:when test="Emphasis | Strong | Underline | SmallCaps | Abbreviation | Acronym | Addition | Repeal | Substitution | Citation | Span">
+			<xsl:when test="Emphasis | Strong | Underline | SmallCaps | Abbreviation | Acronym | Addition | Repeal | Substitution | Citation | Span | FootnoteRef">
 				<p><xsl:apply-templates /></p>
 			</xsl:when>
 			<xsl:otherwise>
