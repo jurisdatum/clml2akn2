@@ -1282,14 +1282,15 @@ helper template is called from the mapping templates for <num>, <heading> and <s
 					</subFlow>
 				</p>
 			</xsl:when>
-			<xsl:when test="text() | Character">
-				<p><xsl:apply-templates /></p>
-			</xsl:when>
 			<xsl:when test="Para">
 				<xsl:apply-templates />
 			</xsl:when>
-			<xsl:when test="Emphasis | Strong | Underline | SmallCaps | Abbreviation | Acronym | Addition | Repeal | Substitution | Citation | Span | FootnoteRef">
-				<p><xsl:apply-templates /></p>
+			<xsl:when test="Emphasis | Strong | Underline | SmallCaps | Expanded | Abbreviation | Acronym | Addition | Repeal | Substitution | Citation | Span | FootnoteRef | Superior | Inferior | Character">
+				<p>
+					<xsl:apply-templates>
+						<xsl:with-param name="wrapped" select="true()" />
+					</xsl:apply-templates>
+				</p>
 			</xsl:when>
 			<xsl:otherwise>
 				<xsl:apply-templates />
@@ -1298,12 +1299,25 @@ helper template is called from the mapping templates for <num>, <heading> and <s
 	</xsl:element>
 </xsl:template>
 
+<xsl:template match="html:th/text() | html:td/text()">
+	<xsl:param name="wrapped" as="xs:boolean" select="false()" />
+	<xsl:choose>
+		<xsl:when test="$wrapped">
+			<xsl:next-match />
+		</xsl:when>
+		<xsl:otherwise>
+			<p>
+				<xsl:next-match />
+			</p>
+		</xsl:otherwise>
+	</xsl:choose>
+</xsl:template>
+
 <xsl:template match="html:td/Image">
 	<p>
 		<xsl:next-match />
 	</p>
 </xsl:template>
-
 
 <!-- images -->
 
@@ -1707,6 +1721,9 @@ helper template is called from the mapping templates for <num>, <heading> and <s
 
 <xsl:template match="SmallCaps">
 	<inline name="smallCaps" style="font-variant:small-caps"><xsl:apply-templates /></inline>
+</xsl:template>
+<xsl:template match="Expanded">
+	<inline name="expanded"><xsl:apply-templates /></inline>
 </xsl:template>
 
 <xsl:template match="Superior">
