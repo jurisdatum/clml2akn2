@@ -92,6 +92,17 @@
 	</xsl:call-template>
 </xsl:template>
 
+<xsl:template match="Division[@Type]">
+	<xsl:call-template name="hierarchy">
+		<xsl:with-param name="name" select="'level'" />
+		<xsl:with-param name="attrs" as="attribute()*">
+			<xsl:attribute name="class">
+				<xsl:value-of select="lower-case(@Type)" />
+			</xsl:attribute>
+		</xsl:with-param>
+	</xsl:call-template>
+</xsl:template>
+
 <xsl:template match="Division">
 	<xsl:call-template name="hierarchy">
 		<xsl:with-param name="name" select="'level'" />
@@ -109,7 +120,15 @@
 
 <!--  -->
 
-<xsl:template match="ListItem/Division">
+<xsl:template match="ListItem/Division[@Type='Annotations']" priority="2">
+	<p>
+		<subFlow name="annotations">
+			<xsl:apply-templates />
+		</subFlow>
+	</p>
+</xsl:template>
+
+<xsl:template match="ListItem/Division" priority="1">
 	<tblock>
 		<xsl:if test="@Type">
 			<xsl:attribute name="class">
