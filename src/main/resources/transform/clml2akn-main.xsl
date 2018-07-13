@@ -1417,11 +1417,21 @@ helper template is called from the mapping templates for <num>, <heading> and <s
 	<xsl:variable name="wrap" select="count(Part | Chapter | Pblock | PsubBlock | P1 | P1group | P2 | P2group | P3 | P4 | P5 | P6 |
 			P/Part | P/Chapter | P/Pblock | P/PsubBlock | P/P1 | P/P1group | P/P2 | P/P2group | P/P3 | P/P4 | P/P5 | P/P6 |
 			EUPart | EUTitle | EUChapter | EUSection | EUSubsection | Division) > 0" />
+	<xsl:variable name="appendix" as="xs:boolean" select="exists(following-sibling::Appendix)" />
 	<xsl:choose>
 		<xsl:when test="$wrap">
 			<xsl:apply-templates select="*[not(self::CommentaryRef)]">
 				<xsl:with-param name="wrap" select="true()" />
 			</xsl:apply-templates>
+		</xsl:when>
+		<xsl:when test="$appendix">
+			<hcontainer name="wrapper">
+				<content>
+					<xsl:apply-templates>
+				<xsl:with-param name="wrap" select="false()" />
+					</xsl:apply-templates>
+				</content>
+			</hcontainer>
 		</xsl:when>
 		<xsl:otherwise>
 			<content>
