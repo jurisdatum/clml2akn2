@@ -128,7 +128,7 @@
 	</p>
 </xsl:template>
 
-<xsl:template match="ListItem/Division" priority="1">
+<xsl:template name="division-as-tblock" match="ListItem/Division" priority="1">
 	<tblock>
 		<xsl:if test="@Type">
 			<xsl:attribute name="class">

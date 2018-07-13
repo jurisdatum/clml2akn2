@@ -1555,9 +1555,14 @@ helper template is called from the mapping templates for <num>, <heading> and <s
 	</note>
 </xsl:template>
 
+<!-- this should be changed for 2.0? all footnotes should be in Notes section?? -->
 <xsl:template match="Footnote[not(parent::Footnotes)]">	<!-- e.g., in table cells -->
 	<tblock class="footnote" eId="{@id}"><xsl:apply-templates /></tblock>
 </xsl:template>
+<xsl:template match="Footnote[not(parent::Footnotes)]/FootnoteText/Division">
+	<xsl:call-template name="division-as-tblock" />
+</xsl:template>
+
 
 <xsl:template match="@CommentaryRef">
 	<xsl:variable name="type" select="key('id', .)/@Type" />
