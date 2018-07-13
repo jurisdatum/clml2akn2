@@ -1453,6 +1453,25 @@ helper template is called from the mapping templates for <num>, <heading> and <s
 
 <!-- conclusions -->
 
+<xsl:template match="ScheduleBody/SignedSection">
+	<xsl:param name="wrap" as="xs:boolean" select="false()" />
+	<xsl:choose>
+		<xsl:when test="$wrap">
+			<wrapUp>
+				<blockContainer class="signatures">
+					<xsl:call-template name="period" />
+					<xsl:apply-templates />
+				</blockContainer>
+			</wrapUp>
+		</xsl:when>
+		<xsl:otherwise>
+			<blockContainer class="signatures">
+				<xsl:call-template name="period" />
+				<xsl:apply-templates />
+			</blockContainer>
+		</xsl:otherwise>
+	</xsl:choose>
+</xsl:template>
 <xsl:template match="Schedules/SignedSection">
 	<wrapUp>
 		<blockContainer class="signatures">
