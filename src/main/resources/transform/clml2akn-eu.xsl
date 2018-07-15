@@ -92,21 +92,32 @@
 	</xsl:call-template>
 </xsl:template>
 
-<xsl:template match="Division[@Type]">
-	<xsl:call-template name="hierarchy">
-		<xsl:with-param name="name" select="'level'" />
-		<xsl:with-param name="attrs" as="attribute()*">
-			<xsl:attribute name="class">
-				<xsl:value-of select="lower-case(@Type)" />
-			</xsl:attribute>
-		</xsl:with-param>
-	</xsl:call-template>
-</xsl:template>
-
 <xsl:template match="Division">
-	<xsl:call-template name="hierarchy">
-		<xsl:with-param name="name" select="'level'" />
-	</xsl:call-template>
+	<xsl:param name="context" as="xs:string?" select="()" tunnel="yes" />
+	<xsl:choose>
+		<xsl:when test="$context = 'block'">
+			<tblock>
+				<xsl:if test="@Type">
+					<xsl:attribute name="class">
+						<xsl:value-of select="lower-case(@Type)" />
+					</xsl:attribute>
+				</xsl:if>
+				<xsl:apply-templates />
+			</tblock>
+		</xsl:when>
+		<xsl:otherwise>
+			<xsl:call-template name="hierarchy">
+				<xsl:with-param name="name" select="'level'" />
+				<xsl:with-param name="attrs" as="attribute()*">
+					<xsl:if test="@Type">
+						<xsl:attribute name="class">
+							<xsl:value-of select="@Type" />
+						</xsl:attribute>
+					</xsl:if>
+				</xsl:with-param>
+			</xsl:call-template>
+		</xsl:otherwise>
+	</xsl:choose>
 </xsl:template>
 
 <xsl:function name="clml2akn:eu-provision-name" as="xs:string">
@@ -116,28 +127,6 @@
 		<xsl:when test="$e/self::P2">paragraph</xsl:when>
 	</xsl:choose>
 </xsl:function>
-
-
-<!--  -->
-
-<xsl:template match="ListItem/Division[@Type='Annotations']" priority="2">
-	<p>
-		<subFlow name="annotations">
-			<xsl:apply-templates />
-		</subFlow>
-	</p>
-</xsl:template>
-
-<xsl:template name="division-as-tblock" match="ListItem/Division" priority="1">
-	<tblock>
-		<xsl:if test="@Type">
-			<xsl:attribute name="class">
-				<xsl:value-of select="lower-case(@Type)" />
-			</xsl:attribute>
-		</xsl:if>
-		<xsl:apply-templates />
-	</tblock>
-</xsl:template>
 
 
 <!-- signatures -->

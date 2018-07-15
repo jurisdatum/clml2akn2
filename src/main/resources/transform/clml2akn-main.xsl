@@ -1058,7 +1058,9 @@ helper template is called from the mapping templates for <num>, <heading> and <s
 						</blockList>
 					</xsl:when>
 					<xsl:otherwise>
-						<xsl:apply-templates />
+						<xsl:apply-templates>
+							<xsl:with-param name="context" select="'quote'" tunnel="yes" />
+						</xsl:apply-templates>
 					</xsl:otherwise>
 				</xsl:choose>
 			</quotedStructure>
@@ -1126,9 +1128,23 @@ helper template is called from the mapping templates for <num>, <heading> and <s
 <!-- lists -->
 
 <xsl:template match="UnorderedList | OrderedList">
-	<blockList class="{lower-case(substring(local-name(), 1, string-length(local-name()) - 4))}">
-		<xsl:apply-templates />
-	</blockList>
+	<xsl:param name="wrap" as="xs:boolean" select="false()" />
+	<xsl:choose>
+		<xsl:when test="$wrap">
+			<hcontainer name="wrapper">
+				<content>
+					<blockList class="{ lower-case(substring(local-name(), 1, string-length(local-name()) - 4)) }">
+						<xsl:apply-templates />
+					</blockList>
+				</content>
+			</hcontainer>
+		</xsl:when>
+		<xsl:otherwise>
+			<blockList class="{ lower-case(substring(local-name(), 1, string-length(local-name()) - 4)) }">
+				<xsl:apply-templates />
+			</blockList>
+		</xsl:otherwise>
+	</xsl:choose>
 </xsl:template>
 
 <xsl:template match="KeyList">
@@ -1201,7 +1217,9 @@ helper template is called from the mapping templates for <num>, <heading> and <s
 				<xsl:value-of select="$num" />
 			</num>
 		</xsl:if>
-		<xsl:apply-templates />
+		<xsl:apply-templates>
+			<xsl:with-param name="context" select="'block'" tunnel="yes" />
+		</xsl:apply-templates>
 	</item>
 </xsl:template>
 
@@ -1580,16 +1598,15 @@ helper template is called from the mapping templates for <num>, <heading> and <s
 		<xsl:attribute name="eId">
 			<xsl:value-of select="clml2akn:id(.)" />
 		</xsl:attribute>
-		<xsl:apply-templates />
+		<xsl:apply-templates>
+			<xsl:with-param name="context" select="'block'" tunnel="yes" />
+		</xsl:apply-templates>
 	</note>
 </xsl:template>
 
 <!-- this should be changed for 2.0? all footnotes should be in Notes section?? -->
 <xsl:template match="Footnote[not(parent::Footnotes)]">	<!-- e.g., in table cells -->
 	<tblock class="footnote" eId="{@id}"><xsl:apply-templates /></tblock>
-</xsl:template>
-<xsl:template match="Footnote[not(parent::Footnotes)]/FootnoteText/Division">
-	<xsl:call-template name="division-as-tblock" />
 </xsl:template>
 
 
