@@ -138,12 +138,13 @@
 </xsl:template>
 
 
-<!-- inline -->
+<!-- new inline -->
 
 <xsl:template match="Uppercase">
-	<inline name="uppercase">
-		<xsl:apply-templates />
-	</inline>
+	<inline name="uppercase"><xsl:apply-templates /></inline>
+</xsl:template>
+<xsl:template match="Expanded">
+	<inline name="expanded"><xsl:apply-templates /></inline>
 </xsl:template>
 
 

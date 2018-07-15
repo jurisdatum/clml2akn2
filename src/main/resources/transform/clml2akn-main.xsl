@@ -1303,7 +1303,7 @@ helper template is called from the mapping templates for <num>, <heading> and <s
 			<xsl:when test="Para">
 				<xsl:apply-templates />
 			</xsl:when>
-			<xsl:when test="Emphasis | Strong | Underline | SmallCaps | Expanded | Abbreviation | Acronym | Addition | Repeal | Substitution | Citation | Span | FootnoteRef | Superior | Inferior | Character">
+			<xsl:when test="Emphasis | Strong | Underline | SmallCaps | Uppercase | Expanded | Abbreviation | Acronym | Addition | Repeal | Substitution | Citation | Span | FootnoteRef | Superior | Inferior | Character">
 				<p>
 					<xsl:apply-templates>
 						<xsl:with-param name="wrapped" select="true()" />
@@ -1772,9 +1772,6 @@ helper template is called from the mapping templates for <num>, <heading> and <s
 
 <xsl:template match="SmallCaps">
 	<inline name="smallCaps" style="font-variant:small-caps"><xsl:apply-templates /></inline>
-</xsl:template>
-<xsl:template match="Expanded">
-	<inline name="expanded"><xsl:apply-templates /></inline>
 </xsl:template>
 
 <xsl:template match="Superior">
