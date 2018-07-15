@@ -1606,7 +1606,11 @@ helper template is called from the mapping templates for <num>, <heading> and <s
 
 <!-- this should be changed for 2.0? all footnotes should be in Notes section?? -->
 <xsl:template match="Footnote[not(parent::Footnotes)]">	<!-- e.g., in table cells -->
-	<tblock class="footnote" eId="{@id}"><xsl:apply-templates /></tblock>
+	<tblock class="footnote" eId="{@id}">
+		<xsl:apply-templates>
+			<xsl:with-param name="context" select="'block'" tunnel="yes" />
+		</xsl:apply-templates>
+	</tblock>
 </xsl:template>
 
 
