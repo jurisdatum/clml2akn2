@@ -1090,6 +1090,19 @@ helper template is called from the mapping templates for <num>, <heading> and <s
 </xsl:template>
 
 
+<!-- BlockExtract -->
+
+<xsl:template match="BlockExtract">
+	<p>
+		<embeddedStructure>
+			<xsl:apply-templates>
+				<xsl:with-param name="context" select="'quote'" tunnel="yes" />
+			</xsl:apply-templates>
+		</embeddedStructure>
+	</p>
+</xsl:template>
+
+
 <!-- changes -->
 
 <xsl:key name="change" match="Addition | Repeal | Substitution" use="@ChangeId" />
