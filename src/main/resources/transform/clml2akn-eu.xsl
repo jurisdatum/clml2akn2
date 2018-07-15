@@ -37,13 +37,9 @@
 </xsl:template>
 
 <xsl:template match="EUPrelims">
-	<xsl:apply-templates />
-</xsl:template>
-
-<xsl:template match="EUPrelims//Division">
-	<tblock>
-		<xsl:apply-templates />
-	</tblock>
+	<xsl:apply-templates>
+		<xsl:with-param name="context" select="'block'" tunnel="yes" />
+	</xsl:apply-templates>
 </xsl:template>
 
 <xsl:template match="EUPrelims/MultilineTitle">
@@ -103,6 +99,9 @@
 					</xsl:attribute>
 				</xsl:if>
 				<xsl:apply-templates />
+				<xsl:if test="empty(*[not(self::Number or self::Title)])">
+					<p/>
+				</xsl:if>
 			</tblock>
 		</xsl:when>
 		<xsl:otherwise>
