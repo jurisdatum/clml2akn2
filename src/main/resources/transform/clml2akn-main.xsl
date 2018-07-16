@@ -871,7 +871,7 @@ requirement that nothing but hierarchical containers appear between the <intro> 
 hierarchical container.
 -->
 
-<xsl:template match="Body/P | ScheduleBody/P | AppendixBody/P">
+<xsl:template match="Body/P | ScheduleBody/P | AppendixBody/P | EUBody/P">
 	<xsl:param name="wrap" select="true()" as="xs:boolean" />
 	<xsl:choose>
 		<xsl:when test="$wrap">
