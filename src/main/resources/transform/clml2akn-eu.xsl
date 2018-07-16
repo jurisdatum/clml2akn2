@@ -15,7 +15,7 @@
 	<xsl:choose>
 		<xsl:when test="$is-fragment">
 			<portionBody>
-				<xsl:if test="Body/@RestrictExtent">
+				<xsl:if test="EUBody/@RestrictExtent">
 					<xsl:attribute name="eId">body</xsl:attribute>
 				</xsl:if>
 				<xsl:call-template name="period"><xsl:with-param name="e" select="EUBody" /></xsl:call-template>
@@ -25,7 +25,7 @@
 		<xsl:otherwise>
 			<xsl:apply-templates select="EUPrelims" />
 			<body>
-				<xsl:if test="Body/@RestrictExtent">
+				<xsl:if test="EUBody/@RestrictExtent">
 					<xsl:attribute name="eId">body</xsl:attribute>
 				</xsl:if>
 				<xsl:call-template name="period"><xsl:with-param name="e" select="Body" /></xsl:call-template>
@@ -37,28 +37,40 @@
 </xsl:template>
 
 <xsl:template match="EUPrelims">
-	<xsl:apply-templates>
-		<xsl:with-param name="context" select="'block'" tunnel="yes" />
-	</xsl:apply-templates>
+	<preface>
+		<xsl:apply-templates select="EUPreamble/preceding-sibling::*" />
+	</preface>
+	<xsl:apply-templates select="EUPreamble" />
 </xsl:template>
 
-<xsl:template match="EUPrelims/MultilineTitle">
-	<preface>
-		<longTitle>
-			<xsl:apply-templates />
-		</longTitle>
-	</preface>
-</xsl:template>
 <xsl:template match="MultilineTitle">
 	<longTitle>
 		<xsl:apply-templates />
 	</longTitle>
 </xsl:template>
 
+<xsl:template match="EUPrelims/Number">
+	<p class="number"><docNumber><xsl:apply-templates /></docNumber></p>
+</xsl:template>
+
 <xsl:template match="EUPreamble">
-	<preamble>
-		<xsl:apply-templates />
-	</preamble>
+	<xsl:choose>
+		<xsl:when test="$is-fragment">
+			<xsl:apply-templates>
+				<xsl:with-param name="context" select="'block'" tunnel="yes" />
+			</xsl:apply-templates>
+			<xsl:apply-templates select="../../EUBody/CommentaryRef" />
+		</xsl:when>
+		<xsl:otherwise>
+			<preamble>
+				<xsl:call-template name="period" />
+				<xsl:apply-templates>
+					<xsl:with-param name="context" select="'block'" tunnel="yes" />
+				</xsl:apply-templates>
+				<xsl:apply-templates select="../../EUBody/CommentaryRef" />
+			</preamble>
+		</xsl:otherwise>
+	</xsl:choose>
 </xsl:template>
 
 <xsl:template match="EUPreamble/CommentaryRef[following-sibling::*[1][self::P][Text]]">
