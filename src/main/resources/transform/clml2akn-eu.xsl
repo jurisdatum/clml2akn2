@@ -167,6 +167,17 @@
 </xsl:template>
 
 
+<!-- BlockExtract -->
+
+<xsl:template match="BlockExtract/EUPreamble">
+	<container name="preamble">
+		<xsl:apply-templates>
+			<xsl:with-param name="context" select="'block'" tunnel="yes" />
+		</xsl:apply-templates>
+	</container>
+</xsl:template>
+
+
 <!-- attachments -->
 
 <xsl:template name="attachments">
@@ -177,11 +188,7 @@
 	</xsl:if>
 </xsl:template>
 
-<xsl:template match="AttachmentGroup">
-	<xsl:apply-templates />
-</xsl:template>
-
-<xsl:template match="Attachments/Title | AttachmentGroup/Title">
+<xsl:template match="Attachments/Title">
 	<attachment>
 		<interstitial>
 			<p>
@@ -189,6 +196,34 @@
 			</p>
 		</interstitial>
 	</attachment>
+</xsl:template>
+
+<xsl:template match="AttachmentGroup">
+	<attachment>
+		<documentCollection name="attachmentGroup">
+			<xsl:call-template name="attachment-metadata" />
+			<xsl:if test="exists(Number | Title)">
+				<preface>
+					<xsl:apply-templates select="Number | Title" />
+				</preface>
+			</xsl:if>
+			<collectionBody>
+				<xsl:apply-templates select="*[not(self::Number or self::Title)]" />
+			</collectionBody>
+		</documentCollection>
+	</attachment>
+</xsl:template>
+
+<xsl:template match="AttachmentGroup/Number | AttachmentGroup/Title">
+	<block name="{ lower-case(local-name()) }">
+		<xsl:apply-templates />
+	</block>
+</xsl:template>
+
+<xsl:template match="AttachmentGroup/Attachment">
+	<component>
+		<xsl:apply-templates />
+	</component>
 </xsl:template>
 
 <xsl:template match="Attachment">
@@ -199,7 +234,7 @@
 
 <xsl:template match="Attachment/EURetained">
 	<doc name="unknown">
-		<xsl:call-template name="attachment-metadata"></xsl:call-template>
+		<xsl:call-template name="attachment-metadata" />
 		<xsl:apply-templates select="EUPrelims" />
 		<mainBody>
 			<xsl:if test="empty(EUBody/* | Schedules)">
