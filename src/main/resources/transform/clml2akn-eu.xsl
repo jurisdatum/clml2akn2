@@ -177,6 +177,10 @@
 	</xsl:if>
 </xsl:template>
 
+<xsl:template match="AttachmentGroup">
+	<xsl:apply-templates />
+</xsl:template>
+
 <xsl:template match="Attachments/Title | AttachmentGroup/Title">
 	<attachment>
 		<interstitial>
