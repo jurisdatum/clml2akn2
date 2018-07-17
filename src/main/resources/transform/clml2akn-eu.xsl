@@ -11,7 +11,7 @@
 	exclude-result-prefixes="xs clml2akn">
 
 
-<xsl:template match="EURetained">
+<xsl:template match="Legislation/EURetained">
 	<xsl:choose>
 		<xsl:when test="$is-fragment">
 			<portionBody>
@@ -32,13 +32,21 @@
 				<xsl:apply-templates select="EUBody/*[not(self::CommentaryRef)]" />
 				<xsl:apply-templates select="Schedules" />
 			</body>
+			<xsl:call-template name="attachments" />
 		</xsl:otherwise>
 	</xsl:choose>
 </xsl:template>
 
 <xsl:template match="EUPrelims">
 	<preface>
-		<xsl:apply-templates select="EUPreamble/preceding-sibling::*" />
+		<xsl:choose>
+			<xsl:when test="exists(EUPreamble)">
+				<xsl:apply-templates select="EUPreamble/preceding-sibling::*" />
+			</xsl:when>
+			<xsl:otherwise>
+				<xsl:apply-templates />
+			</xsl:otherwise>
+		</xsl:choose>
 	</preface>
 	<xsl:apply-templates select="EUPreamble" />
 </xsl:template>
@@ -158,5 +166,46 @@
 	<inline name="expanded"><xsl:apply-templates /></inline>
 </xsl:template>
 
+
+<!-- attachments -->
+
+<xsl:template name="attachments">
+	<xsl:if test="exists(Attachments)">
+		<attachments>
+			<xsl:apply-templates select="Attachments/*" />
+		</attachments>
+	</xsl:if>
+</xsl:template>
+
+<xsl:template match="Attachments/Title">
+	<attachment>
+		<interstitial>
+			<p>
+				<xsl:apply-templates />
+			</p>
+		</interstitial>
+	</attachment>
+</xsl:template>
+
+<xsl:template match="Attachment">
+	<attachment>
+		<xsl:apply-templates />
+	</attachment>
+</xsl:template>
+
+<xsl:template match="Attachment/EURetained">
+	<doc name="unknown">
+		<xsl:call-template name="attachment-metadata"></xsl:call-template>
+		<xsl:apply-templates select="EUPrelims" />
+		<mainBody>
+			<xsl:if test="empty(EUBody/* | Schedules)">
+				<p></p>
+			</xsl:if>
+			<xsl:apply-templates select="EUBody/*" />
+			<xsl:apply-templates select="Schedules" />
+		</mainBody>
+		<xsl:call-template name="attachments" />
+	</doc>
+</xsl:template>
 
 </xsl:transform>

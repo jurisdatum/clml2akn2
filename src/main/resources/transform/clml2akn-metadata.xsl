@@ -25,12 +25,26 @@
 	</xsl:for-each>
 </xsl:function>
 
+
+<xsl:variable name="work-date" select="/ukl:Legislation/ukm:Metadata/(ukm:PrimaryMetadata/ukm:EnactmentDate/@Date | ukm:SecondaryMetadata/ukm:Made/@Date | ukm:EUMetadata/ukm:EnactmentDate/@Date)" />
+
+<xsl:variable name="expr-date" as="xs:string">
+	<xsl:variable name="dct-valid" as="element()?" select="/ukl:Legislation/ukm:Metadata/dct:valid" />
+	<xsl:choose>
+		<xsl:when test="exists($dct-valid)">
+			<xsl:value-of select="$dct-valid" />
+		</xsl:when>
+		<xsl:otherwise>
+			<xsl:value-of select="$work-date" />
+		</xsl:otherwise>
+	</xsl:choose>
+</xsl:variable>
+
 <xsl:template match="ukm:Metadata">
 
 	<meta>
 		<identification source="#source">
 
-			<xsl:variable name="work-date" select="ukm:PrimaryMetadata/ukm:EnactmentDate/@Date | ukm:SecondaryMetadata/ukm:Made/@Date | ukm:EUMetadata/ukm:EnactmentDate/@Date" />
 			<FRBRWork>
 				<FRBRthis value="{$this-uri}" />
 				<FRBRuri value="{$doc-uri}" />
@@ -244,13 +258,7 @@
 				<FRBRthis value="{$expr-this}" />
 				<FRBRuri value="{$expr-uri}" />
 				<xsl:copy-of select="clml2akn:alias($expr-this)" />
-				<FRBRdate>
-					<xsl:attribute name="date">
-						<xsl:choose>
-							<xsl:when test="dct:valid"><xsl:value-of select="dct:valid" /></xsl:when>
-							<xsl:otherwise><xsl:value-of select="$work-date" /></xsl:otherwise>
-						</xsl:choose>
-					</xsl:attribute>
+				<FRBRdate date="{$expr-date}">
 					<xsl:attribute name="name">
 						<xsl:choose>
 							<xsl:when test="dct:valid">validFrom</xsl:when>
@@ -612,6 +620,37 @@
 		<xsl:copy-of select="@*" />
 		<xsl:apply-templates />
 	</xsl:element>
+</xsl:template>
+
+
+<!-- attachments -->
+
+<xsl:template name="attachment-metadata">
+	<meta>
+		<identification source="#source">
+			<FRBRWork>
+				<FRBRthis value=""/>
+				<FRBRuri value=""/>
+				<FRBRdate date="{ $work-date }" name=""/>
+				<FRBRauthor href=""/>
+				<FRBRcountry value="EU"/>
+			</FRBRWork>
+			<FRBRExpression>
+				<FRBRthis value=""/>
+				<FRBRuri value=""/>
+				<FRBRdate date="{ $expr-date }" name=""/>
+				<FRBRauthor href="#source"/>
+				<FRBRlanguage language="eng"/>
+			</FRBRExpression>
+			<FRBRManifestation>
+				<FRBRthis value=""/>
+				<FRBRuri value=""/>
+				<FRBRdate date="{ current-date() }" name="transform"/>
+				<FRBRauthor href="http://www.legislation.gov.uk"/>
+				<FRBRformat value="application/akn+xml"/>
+			</FRBRManifestation>
+		</identification>
+	</meta>
 </xsl:template>
 
 </xsl:transform>
