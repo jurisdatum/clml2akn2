@@ -370,10 +370,10 @@
 								<xsl:choose>
 									<xsl:when test="ukm:SecondaryMetadata/ukm:AlternativeNumber[@Category='C']">
 										<xsl:variable name="c-num" select="ukm:SecondaryMetadata/ukm:AlternativeNumber[@Category='C']/@Value" />
-										<xsl:value-of select="concat('S.R. & O. ', $year, '/', $num, ' (C. ', $c-num, ')')" />
+										<xsl:value-of select="concat('S.R. &amp; O. ', $year, '/', $num, ' (C. ', $c-num, ')')" />
 									</xsl:when>
 									<xsl:otherwise>
-										<xsl:value-of select="concat('S.R. & O. ', $year, '/', $num)" />
+										<xsl:value-of select="concat('S.R. &amp; O. ', $year, '/', $num)" />
 									</xsl:otherwise>
 								</xsl:choose>
 							</xsl:when>
@@ -423,7 +423,7 @@
 								</xsl:for-each>
 							</xsl:when>
 							<xsl:when test="$ukm-doctype = 'UnitedKingdomStatutoryRuleOrOrder'">
-								<xsl:value-of select="concat('S.R. & O. ', $year, '/', $num)" />
+								<xsl:value-of select="concat('S.R. &amp; O. ', $year, '/', $num)" />
 								<xsl:for-each select="ukm:SecondaryMetadata/ukm:AlternativeNumber[@Category='C' or @Category='L' or @Category='S']">
 									<xsl:value-of select="concat(' (', @Category,'. ', @Value, ')')" />
 								</xsl:for-each>
