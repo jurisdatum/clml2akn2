@@ -1,32 +1,25 @@
 <?xml version="1.0" encoding="utf-8"?>
 
-<!-- v1.5, written by Jim Mangiafico, updated _______ -->
+<!-- v1.4.2, written by Jim Mangiafico, updated ________ -->
 
 <xsl:stylesheet version="2.0"
-	xmlns="http://docs.oasis-open.org/legaldocml/ns/akn/3.0"
+	xmlns="http://docs.oasis-open.org/legaldocml/ns/akn/3.0/WD16"
 	xpath-default-namespace="http://www.legislation.gov.uk/namespaces/legislation"
 	xmlns:xsl="http://www.w3.org/1999/XSL/Transform"
 	xmlns:xs="http://www.w3.org/2001/XMLSchema"
-	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
 	xmlns:ukl="http://www.legislation.gov.uk/namespaces/legislation"
 	xmlns:ukm="http://www.legislation.gov.uk/namespaces/metadata"
-	xmlns:dc="http://purl.org/dc/elements/1.1/"
-	xmlns:atom="http://www.w3.org/2005/Atom"
 	xmlns:html="http://www.w3.org/1999/xhtml"
 	xmlns:math="http://www.w3.org/1998/Math/MathML"
+	xmlns:dc="http://purl.org/dc/elements/1.1/"
+	xmlns:dct="http://purl.org/dc/terms/"
+	xmlns:atom="http://www.w3.org/2005/Atom"
 	xmlns:fo="http://www.w3.org/1999/XSL/Format"
 	xmlns:clml2akn="http://clml2akn.mangiafico.com/"
-	exclude-result-prefixes="xs ukl ukm dc atom html math fo clml2akn">
+	exclude-result-prefixes="xs ukl ukm html math dc dct atom fo clml2akn">
 
 <xsl:output method="xml" version="1.0" encoding="utf-8" omit-xml-declaration="no" indent="yes" />
 <xsl:strip-space elements="*" />
-
-<xsl:include href="clml2akn-metadata.xsl" />
-<xsl:include href="clml2akn-eu.xsl" />
-
-<xsl:variable name="namespace" as="xs:string" select="'http://docs.oasis-open.org/legaldocml/ns/akn/3.0'" />
-<xsl:variable name="schema-location" as="xs:string" select="'http://docs.oasis-open.org/legaldocml/akn-core/v1.0/cos01/part2-specs/schemas/akomantoso30.xsd'" />
-<!-- https://raw.githubusercontent.com/oasis-open/legaldocml-akomantoso/master/TemporaryRelease20170330Final/akomantoso30.xsd -->
 
 <!-- keys -->
 
@@ -61,14 +54,7 @@
 
 <xsl:variable name="doc-uri" as="xs:string">
 	<xsl:variable name="base" as="xs:string">
-		<xsl:choose>
-			<xsl:when test="starts-with($expr-uri, 'http://www.legislation.gov.uk/id/')">
-				<xsl:value-of select="$expr-uri" />
-			</xsl:when>
-			<xsl:otherwise>
-				<xsl:value-of select="concat('http://www.legislation.gov.uk/id/', substring-after($expr-uri, 'http://www.legislation.gov.uk/'))" />
-			</xsl:otherwise>
-		</xsl:choose>
+		<xsl:value-of select="concat('http://www.legislation.gov.uk/id/', substring-after($expr-uri, 'http://www.legislation.gov.uk/'))" />
 	</xsl:variable>
 	<xsl:analyze-string select="$base" regex="(/enacted)? ( /\d{{4}}-\d{{2}}-\d{{2}} | /made | /welsh )$" flags="x">
 		<xsl:non-matching-substring><xsl:value-of select="." /></xsl:non-matching-substring>
@@ -83,14 +69,7 @@
 
 <xsl:variable name="this-uri" as="xs:string">
 	<xsl:variable name="base" as="xs:string">
-		<xsl:choose>
-			<xsl:when test="starts-with($expr-uri, 'http://www.legislation.gov.uk/id/')">
-				<xsl:value-of select="$expr-uri" />
-			</xsl:when>
-			<xsl:otherwise>
-				<xsl:value-of select="concat('http://www.legislation.gov.uk/id/', substring-after($expr-uri, 'http://www.legislation.gov.uk/'))" />
-			</xsl:otherwise>
-		</xsl:choose>
+		<xsl:value-of select="concat('http://www.legislation.gov.uk/id/', substring-after($expr-this, 'http://www.legislation.gov.uk/'))" />
 	</xsl:variable>
 	<xsl:analyze-string select="$base" regex="(/enacted)? ( /\d{{4}}-\d{{2}}-\d{{2}} | /made | /welsh )$" flags="x">
 		<xsl:non-matching-substring><xsl:value-of select="." /></xsl:non-matching-substring>
@@ -210,9 +189,7 @@
 <!-- main templates -->
 
 <xsl:template match="/">
-	<akomaNtoso xsi:schemaLocation="{ $namespace } { $schema-location }">
-		<xsl:apply-templates />
-	</akomaNtoso>
+	<akomaNtoso><xsl:apply-templates /></akomaNtoso>
 </xsl:template>
 
 <xsl:template match="/Legislation">
@@ -239,10 +216,603 @@
 
 		<xsl:call-template name="cover" />
 
-		<xsl:apply-templates select="Primary | Secondary | EURetained" />
+		<xsl:apply-templates select="Primary | Secondary" />
 
 	</xsl:element>
 
+</xsl:template>
+
+
+<!-- metadata -->
+
+<xsl:function name="clml2akn:alias" as="element()?">
+	<xsl:param name="uri" as="xs:string" />
+	<xsl:for-each select="('/wsi/', '/nisi/')">
+		<xsl:if test="contains($uri, .)">
+			<FRBRalias value="{replace($uri, ., '/uksi/')}" name="UnitedKingdomStatutoryInstrument" />
+		</xsl:if>
+	</xsl:for-each>
+</xsl:function>
+
+<xsl:template match="ukm:Metadata">
+
+	<meta>
+		<identification source="#source">
+
+			<xsl:variable name="work-date" select="ukm:PrimaryMetadata/ukm:EnactmentDate/@Date | ukm:SecondaryMetadata/ukm:Made/@Date" />
+			<FRBRWork>
+				<FRBRthis value="{$this-uri}" />
+				<FRBRuri value="{$doc-uri}" />
+				<xsl:copy-of select="clml2akn:alias($this-uri)" />
+				<FRBRdate date="{$work-date}">
+					<xsl:attribute name="name">
+						<xsl:choose>
+							<xsl:when test="ukm:*/ukm:DocumentClassification/ukm:DocumentCategory/@Value = 'primary'">enacted</xsl:when>
+							<xsl:otherwise>made</xsl:otherwise>
+						</xsl:choose>
+					</xsl:attribute>
+				</FRBRdate>
+				<FRBRauthor>
+					<xsl:attribute name="href">
+						<xsl:text>http://www.legislation.gov.uk/id/</xsl:text>
+						<xsl:choose>
+							<xsl:when test="$ukm-doctype = 'EnglandAct'">legislature/EnglishParliament</xsl:when>
+							<xsl:when test="$ukm-doctype = 'GreatBritainAct'">legislature/ParliamentOfGreatBritain</xsl:when>
+							<xsl:when test="$ukm-doctype = 'IrelandAct'">legislature/OldIrishParliament</xsl:when>
+							<xsl:when test="$ukm-doctype = 'NorthernIrelandAct'">legislature/NorthernIrelandAssembly</xsl:when>
+							<xsl:when test="$ukm-doctype = 'NorthernIrelandAssemblyMeasure'">legislature/NorthernIrelandAssembly</xsl:when>
+							<xsl:when test="$ukm-doctype = 'NorthernIrelandParliamentAct'">legislature/NorthernIrelandParliament  </xsl:when>
+							<xsl:when test="$ukm-doctype = 'NorthernIrelandOrderInCouncil'">government/uk</xsl:when>
+							<xsl:when test="$ukm-doctype = 'NorthernIrelandDraftOrderInCouncil'">government/uk</xsl:when>
+							<xsl:when test="$ukm-doctype = 'NorthernIrelandStatutoryRule'">government/northern-ireland</xsl:when>
+							<xsl:when test="$ukm-doctype = 'NorthernIrelandDraftStatutoryRule'">government/northern-ireland</xsl:when>
+							<xsl:when test="$ukm-doctype = 'ScottishAct'">legislature/ScottishParliament</xsl:when>
+							<xsl:when test="$ukm-doctype = 'ScottishOldAct'">legislature/OldScottishParliament</xsl:when>
+							<xsl:when test="$ukm-doctype = 'ScottishStatutoryInstrument'">government/scotland</xsl:when>
+							<xsl:when test="$ukm-doctype = 'ScottishDraftStatutoryInstrument'">government/scotland</xsl:when>
+							<xsl:when test="$ukm-doctype = 'UnitedKingdomChurchInstrument'">legislature/GeneralSynod</xsl:when>
+							<xsl:when test="$ukm-doctype = 'UnitedKingdomChurchMeasure'">legislature/GeneralSynod</xsl:when>
+							<xsl:when test="$ukm-doctype = 'UnitedKingdomPrivateAct'">legislature/UnitedKingdomParliament</xsl:when>
+							<xsl:when test="$ukm-doctype = 'UnitedKingdomPublicGeneralAct'">legislature/UnitedKingdomParliament</xsl:when>
+							<xsl:when test="$ukm-doctype = 'UnitedKingdomLocalAct'">legislature/UnitedKingdomParliament</xsl:when>
+							<xsl:when test="$ukm-doctype = 'UnitedKingdomMinisterialOrder'">government/uk</xsl:when>
+							<xsl:when test="$ukm-doctype = 'UnitedKingdomStatutoryInstrument'">government/uk</xsl:when>
+							<xsl:when test="$ukm-doctype = 'UnitedKingdomDraftStatutoryInstrument'">government/uk</xsl:when>
+							<xsl:when test="$ukm-doctype = 'WelshAssemblyMeasure'">legislature/NationalAssemblyForWales</xsl:when>
+							<xsl:when test="$ukm-doctype = 'WelshNationalAssemblyAct'">legislature/NationalAssemblyForWales</xsl:when>
+							<xsl:when test="$ukm-doctype = 'WelshStatutoryInstrument'">government/wales</xsl:when>
+							<xsl:when test="$ukm-doctype = 'WelshDraftStatutoryInstrument'">government/wales</xsl:when>
+							<xsl:when test="$ukm-doctype = 'UnitedKingdomMinisterialDirection'">government/uk</xsl:when>
+							<xsl:when test="$ukm-doctype = 'UnitedKingdomStatutoryRuleOrOrder'">government/uk</xsl:when>
+							<xsl:when test="$ukm-doctype = 'NorthernIrelandStatutoryRuleOrOrder'">government/northern-ireland</xsl:when>
+						</xsl:choose>
+					</xsl:attribute>
+				</FRBRauthor>
+				<FRBRcountry>
+					<xsl:attribute name="value">
+						<xsl:choose>
+							<xsl:when test="$ukm-doctype = 'EnglandAct'">GB-ENG</xsl:when>
+							<xsl:when test="$ukm-doctype = 'GreatBritainAct'">GB-GBN</xsl:when>
+							<xsl:when test="$ukm-doctype = 'IrelandAct'">IE</xsl:when>
+							<xsl:when test="$ukm-doctype = 'NorthernIrelandAct'">GB-NIR</xsl:when>
+							<xsl:when test="$ukm-doctype = 'NorthernIrelandAssemblyMeasure'">GB-NIR</xsl:when>
+							<xsl:when test="$ukm-doctype = 'NorthernIrelandParliamentAct'">GB-NIR</xsl:when>
+							<xsl:when test="$ukm-doctype = 'NorthernIrelandOrderInCouncil'">GB-NIR</xsl:when>
+							<xsl:when test="$ukm-doctype = 'NorthernIrelandDraftOrderInCouncil'">GB-NIR</xsl:when>
+							<xsl:when test="$ukm-doctype = 'NorthernIrelandStatutoryRule'">GB-NIR</xsl:when>
+							<xsl:when test="$ukm-doctype = 'NorthernIrelandDraftStatutoryRule'">GB-NIR</xsl:when>
+							<xsl:when test="$ukm-doctype = 'ScottishAct'">GB-SCT</xsl:when>
+							<xsl:when test="$ukm-doctype = 'ScottishOldAct'">GB-SCT</xsl:when>
+							<xsl:when test="$ukm-doctype = 'ScottishStatutoryInstrument'">GB-SCT</xsl:when>
+							<xsl:when test="$ukm-doctype = 'ScottishDraftStatutoryInstrument'">GB-SCT</xsl:when>
+							<xsl:when test="$ukm-doctype = 'UnitedKingdomChurchInstrument'">GB-UKM</xsl:when>
+							<xsl:when test="$ukm-doctype = 'UnitedKingdomChurchMeasure'">GB-UKM</xsl:when>
+							<xsl:when test="$ukm-doctype = 'UnitedKingdomPrivateAct'">GB-UKM</xsl:when>
+							<xsl:when test="$ukm-doctype = 'UnitedKingdomPublicGeneralAct'">GB-UKM</xsl:when>
+							<xsl:when test="$ukm-doctype = 'UnitedKingdomLocalAct'">GB-UKM</xsl:when>
+							<xsl:when test="$ukm-doctype = 'UnitedKingdomMinisterialOrder'">GB-UKM</xsl:when>
+							<xsl:when test="$ukm-doctype = 'UnitedKingdomStatutoryInstrument'">GB-UKM</xsl:when>
+							<xsl:when test="$ukm-doctype = 'UnitedKingdomDraftStatutoryInstrument'">GB-UKM</xsl:when>
+							<xsl:when test="$ukm-doctype = 'WelshAssemblyMeasure'">GB-WLS</xsl:when>
+							<xsl:when test="$ukm-doctype = 'WelshNationalAssemblyAct'">GB-WLS</xsl:when>
+							<xsl:when test="$ukm-doctype = 'WelshStatutoryInstrument'">GB-WLS</xsl:when>
+							<xsl:when test="$ukm-doctype = 'WelshDraftStatutoryInstrument'">GB-WLS</xsl:when>
+							<xsl:when test="$ukm-doctype = 'UnitedKingdomMinisterialDirection'">GB-UKM</xsl:when>
+							<xsl:when test="$ukm-doctype = 'UnitedKingdomStatutoryRuleOrOrder'">GB-UKM</xsl:when>
+							<xsl:when test="$ukm-doctype = 'NorthernIrelandStatutoryRuleOrOrder'">GB-NIR</xsl:when>
+							<xsl:otherwise>GB-UKM</xsl:otherwise>
+						</xsl:choose>
+					</xsl:attribute>
+				</FRBRcountry>
+				<xsl:if test="ukm:SecondaryMetadata/ukm:DocumentClassification/ukm:DocumentMinorType">
+					<FRBRsubtype value="{ukm:SecondaryMetadata/ukm:DocumentClassification/ukm:DocumentMinorType/@Value}" />
+				</xsl:if>
+				<FRBRnumber value="{ukm:*/ukm:Number/@Value}" />
+				<FRBRname>
+					<xsl:attribute name="value">
+						<xsl:variable name="year" select="ukm:PrimaryMetadata/ukm:Year/@Value | ukm:SecondaryMetadata/ukm:Year/@Value" />
+						<xsl:variable name="num" select="ukm:PrimaryMetadata/ukm:Number/@Value | ukm:SecondaryMetadata/ukm:Number/@Value" />
+						<xsl:choose>
+							<xsl:when test="$ukm-doctype = 'EnglandAct'">
+								<xsl:value-of select="concat($year, ' c. ', $num)" />
+							</xsl:when>
+							<xsl:when test="$ukm-doctype = 'GreatBritainAct'">
+								<xsl:value-of select="concat($year, ' c. ', $num)" />
+							</xsl:when>
+							<xsl:when test="$ukm-doctype = 'IrelandAct'">
+								<xsl:value-of select="concat($year, ' c. ', $num, ' [I]')" />
+							</xsl:when>
+							<xsl:when test="$ukm-doctype = 'NorthernIrelandAct'">
+								<xsl:value-of select="concat($year, ' c. ', $num, ' (N.I.)')" />
+							</xsl:when>
+							<xsl:when test="$ukm-doctype = 'NorthernIrelandAssemblyMeasure'">
+								<xsl:value-of select="concat($year, ' c. ', $num, ' (N.I.)')" />
+							</xsl:when>
+							<xsl:when test="$ukm-doctype = 'NorthernIrelandParliamentAct'">
+								<xsl:value-of select="concat($year, ' c. ', $num, ' (N.I.)')" />
+							</xsl:when>
+							<xsl:when test="$ukm-doctype = 'NorthernIrelandOrderInCouncil' or $ukm-doctype = 'NorthernIrelandDraftOrderInCouncil'">
+								<xsl:variable name="alt-num" select="ukm:SecondaryMetadata/ukm:AlternativeNumber[@Category='NI']/@Value" />
+								<xsl:value-of select="concat('S.I. ', $year, '/', $num, ' (N.I. ', $alt-num, ')')" />
+							</xsl:when>
+							<xsl:when test="$ukm-doctype = 'NorthernIrelandStatutoryRule' or $ukm-doctype = 'NorthernIrelandDraftStatutoryRule'">
+								<xsl:choose>
+									<xsl:when test="ukm:SecondaryMetadata/ukm:AlternativeNumber[@Category='C']">
+										<xsl:variable name="c-num" select="ukm:SecondaryMetadata/ukm:AlternativeNumber[@Category='C']/@Value" />
+										<xsl:value-of select="concat('S.R. ', $year, '/', $num, ' (C. ', $c-num, ')')" />
+									</xsl:when>
+									<xsl:otherwise>
+										<xsl:value-of select="concat('S.R. ', $year, '/', $num)" />
+									</xsl:otherwise>
+								</xsl:choose>
+							</xsl:when>
+							<xsl:when test="$ukm-doctype = 'NorthernIrelandStatutoryRuleOrOrder'">
+								<xsl:choose>
+									<xsl:when test="ukm:SecondaryMetadata/ukm:AlternativeNumber[@Category='C']">
+										<xsl:variable name="c-num" select="ukm:SecondaryMetadata/ukm:AlternativeNumber[@Category='C']/@Value" />
+										<xsl:value-of select="concat('S.R. &amp; O. ', $year, '/', $num, ' (C. ', $c-num, ')')" />
+									</xsl:when>
+									<xsl:otherwise>
+										<xsl:value-of select="concat('S.R. &amp; O. ', $year, '/', $num)" />
+									</xsl:otherwise>
+								</xsl:choose>
+							</xsl:when>
+							<xsl:when test="$ukm-doctype = 'ScottishAct'">
+								<xsl:value-of select="concat($year, ' asp ', $num)" />
+							</xsl:when>
+							<xsl:when test="$ukm-doctype = 'ScottishOldAct'">
+								<xsl:value-of select="concat($year, ' c. ', $num, ' [S]')" />
+							</xsl:when>
+							<xsl:when test="$ukm-doctype = 'ScottishStatutoryInstrument' or $ukm-doctype = 'ScottishDraftStatutoryInstrument'">
+								<xsl:choose>
+									<xsl:when test="ukm:SecondaryMetadata/ukm:AlternativeNumber[@Category='C']">
+										<xsl:variable name="c-num" select="ukm:SecondaryMetadata/ukm:AlternativeNumber[@Category='C']/@Value" />
+										<xsl:value-of select="concat('S.S.I. ', $year, '/', $num, ' (C. ', $c-num, ')')" />
+									</xsl:when>
+									<xsl:otherwise>
+										<xsl:value-of select="concat('S.S.I. ', $year, '/', $num)" />
+									</xsl:otherwise>
+								</xsl:choose>
+							</xsl:when>
+							<xsl:when test="$ukm-doctype = 'UnitedKingdomChurchInstrument'">
+								<xsl:value-of select="concat('Church Instrument ', $year, '/', $num)" />
+							</xsl:when>
+							<xsl:when test="$ukm-doctype = 'UnitedKingdomChurchMeasure'">
+								<xsl:value-of select="concat($year, ' No. ', $num)" />
+							</xsl:when>
+							<xsl:when test="$ukm-doctype = 'UnitedKingdomPrivateAct'">
+							</xsl:when>
+							<xsl:when test="$ukm-doctype = 'UnitedKingdomPublicGeneralAct'">
+								<xsl:value-of select="concat($year, ' c. ', $num)" />
+							</xsl:when>
+							<xsl:when test="$ukm-doctype = 'UnitedKingdomLocalAct'">
+								<xsl:value-of select="$year" />
+								<xsl:text> c. </xsl:text>
+								<xsl:number value="$num" format="i" />
+							</xsl:when>
+							<xsl:when test="$ukm-doctype = 'UnitedKingdomMinisterialOrder'">
+								<xsl:value-of select="concat('Ministerial Order ', $year, '/', $num)" />
+							</xsl:when>
+							<xsl:when test="$ukm-doctype = 'UnitedKingdomMinisterialDirection'">
+								<xsl:value-of select="concat('Ministerial Direction ', $year, '/', $num)" />
+							</xsl:when>
+							<xsl:when test="$ukm-doctype = 'UnitedKingdomStatutoryInstrument' or $ukm-doctype = 'UnitedKingdomDraftStatutoryInstrument'">
+								<xsl:value-of select="concat('S.I. ', $year, '/', $num)" />
+								<xsl:for-each select="ukm:SecondaryMetadata/ukm:AlternativeNumber[@Category='C' or @Category='L' or @Category='S']">
+									<xsl:value-of select="concat(' (', @Category,'. ', @Value, ')')" />
+								</xsl:for-each>
+							</xsl:when>
+							<xsl:when test="$ukm-doctype = 'UnitedKingdomStatutoryRuleOrOrder'">
+								<xsl:value-of select="concat('S.R. &amp; O. ', $year, '/', $num)" />
+								<xsl:for-each select="ukm:SecondaryMetadata/ukm:AlternativeNumber[@Category='C' or @Category='L' or @Category='S']">
+									<xsl:value-of select="concat(' (', @Category,'. ', @Value, ')')" />
+								</xsl:for-each>
+							</xsl:when>
+							<xsl:when test="$ukm-doctype = 'WelshAssemblyMeasure'">
+								<xsl:value-of select="concat($year, ' nawm ', $num)" />
+							</xsl:when>
+							<xsl:when test="$ukm-doctype = 'WelshNationalAssemblyAct'">
+								<xsl:value-of select="concat($year, ' anaw ', $num)" />
+							</xsl:when>
+							<xsl:when test="$ukm-doctype = 'WelshStatutoryInstrument' or $ukm-doctype = 'WelshDraftStatutoryInstrument'">
+								<xsl:variable name="alt-num" select="ukm:SecondaryMetadata/ukm:AlternativeNumber[@Category='W' or @Category='Cy']/@Value" />
+								<xsl:choose>
+									<xsl:when test="ukm:SecondaryMetadata/ukm:AlternativeNumber[@Category='C']">
+										<xsl:variable name="c-num" select="ukm:SecondaryMetadata/ukm:AlternativeNumber[@Category='C']/@Value" />
+										<xsl:value-of select="concat('S.I. ', $year, '/', $num, ' (W. ', $alt-num, ') (C. ', $c-num,')')" />
+									</xsl:when>
+									<xsl:otherwise>
+										<xsl:value-of select="concat('S.I. ', $year, '/', $num, ' (W. ', $alt-num, ')')" />
+									</xsl:otherwise>
+								</xsl:choose>
+							</xsl:when>
+							<xsl:otherwise>
+								<xsl:value-of select="concat($year, ' c. ', $num)" />
+							</xsl:otherwise>
+						</xsl:choose>
+					</xsl:attribute>
+				</FRBRname>
+				<FRBRprescriptive value="true" />
+			</FRBRWork>
+
+			<FRBRExpression>
+				<FRBRthis value="{$expr-this}" />
+				<FRBRuri value="{$expr-uri}" />
+				<xsl:copy-of select="clml2akn:alias($expr-this)" />
+				<FRBRdate>
+					<xsl:attribute name="date">
+						<xsl:choose>
+							<xsl:when test="dct:valid"><xsl:value-of select="dct:valid" /></xsl:when>
+							<xsl:otherwise><xsl:value-of select="$work-date" /></xsl:otherwise>
+						</xsl:choose>
+					</xsl:attribute>
+					<xsl:attribute name="name">
+						<xsl:choose>
+							<xsl:when test="dct:valid">validFrom</xsl:when>
+							<xsl:when test="ukm:*/ukm:DocumentClassification/ukm:DocumentCategory/@Value = 'primary'">enacted</xsl:when>
+							<xsl:otherwise>made</xsl:otherwise>
+						</xsl:choose>
+					</xsl:attribute>
+				</FRBRdate>
+				<FRBRauthor href="#source" />
+				<FRBRlanguage>
+					<xsl:attribute name="language">
+						<xsl:choose>
+							<xsl:when test="dc:language = 'cy'">cym</xsl:when>
+							<xsl:otherwise>eng</xsl:otherwise>
+						</xsl:choose>
+					</xsl:attribute>
+				</FRBRlanguage>
+			</FRBRExpression>
+
+			<FRBRManifestation>
+				<xsl:variable name="mani-this" select="concat($expr-this, '/data.akn')" />
+				<FRBRthis value="{$mani-this}" />
+				<FRBRuri value="{$expr-uri}/data.akn" />
+				<xsl:copy-of select="clml2akn:alias($mani-this)" />
+				<FRBRdate date="{current-date()}" name="transform" />
+				<FRBRauthor href="http://www.legislation.gov.uk" />
+				<FRBRformat value="application/akn+xml" />
+			</FRBRManifestation>
+		</identification>
+		
+		<!-- classification -->
+		<xsl:if test="dc:subject">
+			<classification source="#source">
+				<xsl:for-each select="dc:subject">
+					<keyword value="{lower-case(.)}" showAs="{.}" dictionary="http://www.legislation.gov.uk" />
+				</xsl:for-each>
+			</classification>
+		</xsl:if>
+				
+		<!-- lifecycle -->
+		<lifecycle source="#source">
+			<xsl:if test="ukm:PrimaryMetadata/ukm:EnactmentDate">
+				<eventRef date="{ukm:PrimaryMetadata/ukm:EnactmentDate/@Date}" type="generation" eId="enacted-date" source="#source" />
+			</xsl:if>
+			<xsl:if test="ukm:SecondaryMetadata/ukm:Sifted">
+				<eventRef date="{ukm:SecondaryMetadata/ukm:Sifted/@Date}" eId="sifted-date" source="#source" />
+			</xsl:if>
+			<xsl:if test="ukm:SecondaryMetadata/ukm:Made">
+				<eventRef date="{ukm:SecondaryMetadata/ukm:Made/@Date}" type="generation" eId="made-date" source="#source" />
+			</xsl:if>
+			<xsl:if test="ukm:SecondaryMetadata/ukm:Laid">
+				<eventRef date="{ukm:SecondaryMetadata/ukm:Laid/@Date}" eId="laid-date" source="#source" />
+			</xsl:if>
+			<xsl:for-each select="ukm:SecondaryMetadata/ukm:ComingIntoForce/ukm:DateTime">
+				<eventRef date="{@Date}" eId="coming-into-force-date-{position()}" source="#source" />
+			</xsl:for-each>
+
+			<!-- adds an eventRef element for each date in a dc:hasVersion atom link -->
+			<xsl:for-each select="atom:link[@rel='http://purl.org/dc/terms/hasVersion']">
+				<xsl:if test="@title castable as xs:date">
+			        <eventRef date="{@title}" type="amendment" source="#source" />
+				</xsl:if>
+			</xsl:for-each>
+
+			<!-- adds an eventRef element for each date in a RestrictStartDate or @RestrictEndDate attribute -->
+			<xsl:for-each select="$event-dates">
+		        <eventRef date="{.}" eId="effective-date-{position()}" source="#source" />
+			</xsl:for-each>
+		</lifecycle>
+		
+		<!-- analysis -->
+		<!-- adds a passiveModification for each Addition, Repeal or Substitution (only one per unique ChangeId attribute) -->
+		<!-- adds a restriction for each unique RestrictExtent attribute -->
+		<xsl:variable name="modifications" select="//Addition | //Repeal | //Substitution" as="element()*" />
+		<xsl:variable name="restrictions" select="//*[@RestrictExtent]" as="element()*" />
+		<xsl:if test="$modifications or $restrictions">
+			<analysis source="#source">
+				<xsl:if test="$modifications">
+					<passiveModifications>
+						<xsl:for-each-group select="$modifications" group-by="@ChangeId">
+							<textualMod>
+								<xsl:attribute name="type">
+									<xsl:choose>
+										<xsl:when test="self::Addition">insertion</xsl:when>
+										<xsl:when test="self::Repeal">repeal</xsl:when>
+										<xsl:when test="self::Substitution">substitution</xsl:when>
+									</xsl:choose>
+								</xsl:attribute>
+								<xsl:attribute name="eId"><xsl:value-of select="@ChangeId" /></xsl:attribute>
+								<source href="#{@CommentaryRef}" />
+								<destination href="#{./ancestor::*[@id][1]/@id}" /><!-- id of first ancestor -->
+							</textualMod>
+						</xsl:for-each-group>
+					</passiveModifications>
+				</xsl:if>
+				<xsl:if test="$restrictions">
+					<restrictions source="#source">
+						<xsl:for-each select="$restrictions">
+							<xsl:sort select="@id" />
+							<restriction>
+								<xsl:if test="not(self::Legislation)">
+									<xsl:attribute name="href">
+										<xsl:text>#</xsl:text>
+										<xsl:choose>
+											<xsl:when test="self::ContentsItem"><xsl:value-of select="@ContentRef" /></xsl:when>
+											<xsl:when test="self::PrimaryPrelims">preface</xsl:when>
+											<xsl:when test="self::Body">body</xsl:when>
+											<xsl:when test="self::P1group[count(P1) = 1][not(P1/@RestrictExtent)]"><xsl:value-of select="clml2akn:vid(P1)" /></xsl:when>
+											<xsl:when test="self::P2group[count(P2) = 1]"><xsl:value-of select="clml2akn:vid(P2)" /></xsl:when>
+											<xsl:otherwise><xsl:value-of select="clml2akn:vid(.)" /></xsl:otherwise>
+										</xsl:choose>
+										<xsl:if test="count(key('id', @id)[@RestrictExtent][not(ancestor::Versions)]) > 1">
+											<xsl:text>[</xsl:text>
+											<xsl:value-of select="index-of(key('id', @id), .)" />
+											<xsl:text>]</xsl:text>
+										</xsl:if>
+									</xsl:attribute>
+								</xsl:if>
+								<xsl:attribute name="refersTo">
+									<xsl:text>#</xsl:text>
+									<xsl:value-of select="lower-case(replace(@RestrictExtent,'\.',''))" />
+								</xsl:attribute>
+								<xsl:attribute name="type">jurisdiction</xsl:attribute>
+							</restriction>
+						</xsl:for-each>
+					</restrictions>
+				</xsl:if>
+			</analysis>
+		</xsl:if>
+		
+		<!-- temporal data -->
+		<!-- add a timeInterval element for each unique pair of RestrictStartDate and RestrictEndDate attributes -->
+		<xsl:if test="//*[@RestrictStartDate | @RestrictEndDate]">
+			<temporalData source="#source">
+				<xsl:for-each-group select="//*[@RestrictStartDate | @RestrictEndDate]" group-by="concat(@RestrictStartDate, '-', @RestrictEndDate)">
+					<xsl:sort select="concat(@RestrictStartDate, '-', @RestrictEndDate)" />
+					<temporalGroup eId="period{position()}">
+						<timeInterval>
+							<xsl:if test="@RestrictStartDate">
+								<xsl:attribute name="start">
+									<xsl:text>#</xsl:text>
+									<xsl:value-of select="clml2akn:event-id(@RestrictStartDate)" />
+								</xsl:attribute>
+							</xsl:if>
+							<xsl:if test="@RestrictEndDate">
+								<xsl:attribute name="end">
+									<xsl:text>#</xsl:text>
+									<xsl:value-of select="clml2akn:event-id(@RestrictEndDate)" />
+								</xsl:attribute>
+							</xsl:if>
+							<xsl:attribute name="refersTo">
+								<xsl:text>#period-concept</xsl:text>
+								<xsl:value-of select="position()" />
+							</xsl:attribute>
+						</timeInterval>
+					</temporalGroup>
+				</xsl:for-each-group>
+			</temporalData>
+		</xsl:if>
+
+		<!-- references -->
+		<!-- a passiveRef element for each UnappliedEffect -->
+		<!-- a TLCOrganization for each Department -->
+		<!-- a TLCLocation for each unique RestrictExtent and each AddressLine -->
+		<!-- a TLCRole for each JobTitle -->
+		<!-- a TLCPerson for each PersonName -->
+		<!-- a TLCTerm for each unique Term -->
+		<!-- a TLCConcept for each unique territorial extent and each unique Subject -->
+		<references source="#source">
+		
+			<TLCOrganization eId="source">
+				<xsl:variable name="dc-publishers" select="dc:publisher" as="xs:string*" />
+				<xsl:attribute name="href">
+					<xsl:text>http://www.legislation.gov.uk/id/</xsl:text>
+					<xsl:choose>
+						<xsl:when test="$dc-publishers = ('King''s Printer of Acts of Parliament', 'Queen''s Printer of Acts of Parliament')">
+							<xsl:text>publisher/KingsOrQueensPrinterOfActsOfParliament</xsl:text>
+						</xsl:when>
+						<xsl:when test="$dc-publishers = ('King''s Printer for Scotland', 'Queen''s Printer for Scotland')">
+							<xsl:text>publisher/KingsOrQueensPrinterForScotland</xsl:text>
+						</xsl:when>
+						<xsl:when test="$dc-publishers = ('Government Printer for Northern Ireland')">
+							<xsl:text>publisher/GovernmentPrinterForNorthernIreland</xsl:text>
+						</xsl:when>
+						<xsl:when test="$dc-publishers = ('The National Archives')">
+							<xsl:text>publisher/TheNationalArchives</xsl:text>
+						</xsl:when>
+						<xsl:when test="$dc-publishers = ('Statute Law Database')">
+							<xsl:text>publisher/StatuteLawDatabase</xsl:text>
+						</xsl:when>
+						<xsl:when test="$dc-publishers = ('Westlaw')">
+							<xsl:text>contributor/Westlaw</xsl:text>
+						</xsl:when>
+						<xsl:otherwise>
+							<xsl:value-of select="translate($dc-publishers[1], ' ', '')" />
+						</xsl:otherwise>
+					</xsl:choose>
+				</xsl:attribute>
+				<xsl:attribute name="showAs">
+					<xsl:choose>
+						<xsl:when test="$dc-publishers = ('King''s Printer of Acts of Parliament')">
+							<xsl:text>King's Printer of Acts of Parliament</xsl:text>
+						</xsl:when>
+						<xsl:when test="$dc-publishers = ('Queen''s Printer of Acts of Parliament')">
+							<xsl:text>Queen's Printer of Acts of Parliament</xsl:text>
+						</xsl:when>
+						<xsl:when test="$dc-publishers = ('King''s Printer for Scotland')">
+							<xsl:text>King's Printer for Scotland</xsl:text>
+						</xsl:when>
+						<xsl:when test="$dc-publishers = ('Queen''s Printer for Scotland')">
+							<xsl:text>Queen's Printer for Scotland</xsl:text>
+						</xsl:when>
+						<xsl:when test="$dc-publishers = ('Government Printer for Northern Ireland')">
+							<xsl:text>Government Printer for Northern Ireland</xsl:text>
+						</xsl:when>
+						<xsl:when test="$dc-publishers = ('The National Archives')">
+							<xsl:text>The National Archives</xsl:text>
+						</xsl:when>
+						<xsl:when test="$dc-publishers = ('Statute Law Database')">
+							<xsl:text>Statute Law Database</xsl:text>
+						</xsl:when>
+						<xsl:when test="$dc-publishers = ('Westlaw')">
+							<xsl:text>Westlaw</xsl:text>
+						</xsl:when>
+						<xsl:otherwise>
+							<xsl:value-of select="$dc-publishers[1]" />
+						</xsl:otherwise>
+					</xsl:choose>
+				</xsl:attribute>
+			</TLCOrganization>
+		
+			<xsl:for-each-group select="ukm:*/ukm:UnappliedEffects/ukm:UnappliedEffect" group-by="@AffectingURI">
+				<xsl:sort select="@AffectingURI" />
+				<passiveRef href="{@AffectingURI}" showAs="{ukm:AffectingTitle[1]}" />
+			</xsl:for-each-group>
+
+			<xsl:for-each select="//Department">
+				<TLCOrganization eId="ref-{clml2akn:id(.)}" href="/ontology/organization/uk.{replace(.,' ’','')}" showAs="{.}" />			
+			</xsl:for-each>
+
+			<xsl:for-each-group select="//@RestrictExtent" group-by=".">
+				<TLCLocation eId="{lower-case(replace(.,'\.',''))}">
+					<xsl:variable name="extent" select="replace(.,'E','England')" />
+					<xsl:variable name="extent" select="replace($extent, 'W', 'Wales')" />
+					<xsl:variable name="extent" select="replace($extent, 'S', 'Scotland')" />
+					<xsl:variable name="extent" select="replace($extent, 'N.I.', 'Northern Ireland')" />
+					<xsl:attribute name="href">
+						<xsl:text>/ontology/jurisdictions/uk.</xsl:text>
+						<xsl:value-of select="translate($extent, '\+ ', '')" />
+					</xsl:attribute>
+					<xsl:attribute name="showAs">
+						<xsl:value-of select="string-join(tokenize($extent, '\+'), ', ')" />
+					</xsl:attribute>
+				</TLCLocation>
+			</xsl:for-each-group>
+			
+			<xsl:for-each select="//AddressLine">
+				<TLCLocation eId="{lower-case(translate(.,' ,',''))}" href="/ontology/location/uk.{translate(.,' ,','')}" showAs="{.}" />
+			</xsl:for-each>
+
+			<xsl:for-each select="//JobTitle">
+				<TLCRole eId="ref-{clml2akn:id(.)}" href="/ontology/role/uk.{replace(.,' ’','')}" showAs="{.}" />			
+			</xsl:for-each>
+
+			<xsl:for-each select="//PersonName">
+				<TLCPerson eId="ref-{clml2akn:id(.)}" href="/ontology/persons/uk.{replace(.,' ','')}" showAs="{.}" />			
+			</xsl:for-each>
+
+ 			<xsl:for-each-group select="//Term" group-by="clml2akn:term-id(.)">
+ 				<xsl:variable name="id" select="clml2akn:term-id(.)" />
+				<TLCTerm eId="{$id}" href="/ontology/term/uk.{replace($id, 'term-', '')}" showAs="{.}" />
+			</xsl:for-each-group>
+
+			<xsl:for-each-group select="//*[@RestrictStartDate | @RestrictEndDate]" group-by="concat(@RestrictStartDate,@RestrictEndDate)">
+				<xsl:sort select="concat(@RestrictStartDate,@RestrictEndDate)" />
+				<TLCConcept eId="period-concept{position()}">
+					<xsl:attribute name="href">
+						<xsl:text>/ontology/time/</xsl:text>
+						<xsl:value-of select="replace(@RestrictStartDate,'-','.')" />
+						<xsl:if test="@RestrictEndDate">
+							<xsl:text>-</xsl:text>
+							<xsl:value-of select="replace(@RestrictEndDate,'-','.')" />
+						</xsl:if>
+					</xsl:attribute>
+					<xsl:variable name="period-string">
+						<xsl:choose>
+							<xsl:when test="@RestrictStartDate and @RestrictEndDate">
+								<xsl:text>from </xsl:text>
+								<xsl:value-of select="@RestrictStartDate" />
+								<xsl:text> until </xsl:text>
+								<xsl:value-of select="@RestrictEndDate" />
+							</xsl:when>
+							<xsl:when test="@RestrictStartDate and not(@RestrictEndDate)">
+								<xsl:text>since </xsl:text>
+								<xsl:value-of select="@RestrictStartDate" />
+							</xsl:when>
+							<xsl:when test="not(@RestrictStartDate) and @RestrictEndDate">
+								<xsl:text> before </xsl:text>
+								<xsl:value-of select="@RestrictEndDate" />
+							</xsl:when>
+						</xsl:choose>
+					</xsl:variable>
+					<xsl:attribute name="showAs"><xsl:value-of select="$period-string" /></xsl:attribute>
+				</TLCConcept>
+			</xsl:for-each-group>
+			<xsl:for-each select="/Legislation/Secondary/SecondaryPrelims/SubjectInformation/Subject/Title |
+				/Legislation/Secondary/SecondaryPrelims/SubjectInformation/Subject/Subtitle">
+				<TLCConcept href="/uk/subject/{lower-case(translate(., ' ,', '-'))}" showAs="{.}" eId="{clml2akn:id(.)}" />
+			</xsl:for-each>
+		</references>
+		
+		<!-- notes -->
+		<!-- see templates for Commentaries, MarginNotes & Footnotes -->
+		<xsl:if test="/Legislation/Commentaries | /Legislation/MarginNotes | /Legislation/Footnotes">
+			<notes source="#source">
+				<xsl:apply-templates select="/Legislation/Commentaries/Commentary | /Legislation/MarginNotes/MarginNote | /Legislation/Footnotes/Footnote" />
+			</notes>
+		</xsl:if>
+		
+		<!-- proprietary -->
+		<!-- all ukm:Metadata with namespace -->
+		<proprietary source="#source">
+			<xsl:namespace name="ukl" select="'http://www.legislation.gov.uk/namespaces/legislation'"/>
+			<xsl:namespace name="ukm" select="'http://www.legislation.gov.uk/namespaces/metadata'"/>
+			<xsl:namespace name="dc" select="'http://purl.org/dc/elements/1.1/'"/>
+			<xsl:namespace name="dct" select="'http://purl.org/dc/terms/'"/>
+			<xsl:namespace name="atom" select="'http://www.w3.org/2005/Atom'"/>
+			<xsl:if test="../@RestrictStartDate">
+				<ukl:RestrictStartDate value="{../@RestrictStartDate}" />
+			</xsl:if>
+			<xsl:if test="../@RestrictEndDate">
+				<ukl:RestrictEndDate value="{../@RestrictEndDate}" />
+			</xsl:if>
+			<xsl:if test="../@Status">
+				<ukl:Status value="{../@Status}" />
+			</xsl:if>
+			<xsl:apply-templates />
+		</proprietary>
+	</meta>
+
+</xsl:template>
+
+<xsl:template match="/Legislation/ukm:Metadata//*">
+	<xsl:element name="{name()}">
+		<xsl:copy-of select="@*"/> 
+		<xsl:apply-templates select="node()" />
+	</xsl:element>
 </xsl:template>
 
 
@@ -570,7 +1140,6 @@ follows the element immediately with any alternative version(s)
 		
 		<xsl:variable name="subs" select="Part | Chapter | Pblock | PsubBlock |
 			P1 | P1group | P2 | P2group | P3 | P4 | P5 | P6 |
-			EUPart | EUTitle | EUChapter | EUSection | EUSubsection | Division |
 			$paras/Part | $paras/Chapter | $paras/Pblock | $paras/PsubBlock |
 			$paras/P1 | $paras/P1group | $paras/P2 | $paras/P2group |
 			$paras/P3 | $paras/P4 | $paras/P5 | $paras/P6" />
@@ -801,14 +1370,7 @@ http://www.opsi.gov.uk/si/si-practice.doc
 
 <xsl:function name="clml2akn:provision-name" as="xs:string">
 	<xsl:param name="e" as="element()" />
-	<xsl:choose>
-		<xsl:when test="exists($e/ancestor::EURetained)">
-			<xsl:value-of select="clml2akn:eu-provision-name($e)" />
-		</xsl:when>
-		<xsl:otherwise>
-			<xsl:value-of select="clml2akn:provision-name($e, local-name($e))" />
-		</xsl:otherwise>
-	</xsl:choose>
+	<xsl:value-of select="clml2akn:provision-name($e, local-name($e))" />
 </xsl:function>
 
 <!-- When a P1group has a P as a child, or when a P2group has a P2para as a direct child (e.g., ukpga/2005/4),
@@ -872,7 +1434,7 @@ requirement that nothing but hierarchical containers appear between the <intro> 
 hierarchical container.
 -->
 
-<xsl:template match="Body/P | ScheduleBody/P | AppendixBody/P | EUBody/P">
+<xsl:template match="Body/P | ScheduleBody/P | AppendixBody/P">
 	<xsl:param name="wrap" select="true()" as="xs:boolean" />
 	<xsl:choose>
 		<xsl:when test="$wrap">
@@ -976,13 +1538,13 @@ helper template is called from the mapping templates for <num>, <heading> and <s
 
 <xsl:template match="Number | Pnumber">
 	<num>
-<!-- 		<xsl:if test="@PuncBefore != '' or @PuncAfter != ''">
+		<xsl:if test="@PuncBefore != '' or @PuncAfter != ''">
 			<xsl:attribute name="title">
 				<xsl:value-of select="@PuncBefore" />
 				<xsl:value-of select="." />
 				<xsl:value-of select="@PuncAfter" />
 			</xsl:attribute>
-		</xsl:if> -->
+		</xsl:if>
 		<xsl:apply-templates />
 		<xsl:call-template name="reference" />
 	</num>
@@ -1052,18 +1614,7 @@ helper template is called from the mapping templates for <num>, <heading> and <s
 					<xsl:attribute name="startQuote"><xsl:text>&#8216;</xsl:text></xsl:attribute>
 					<xsl:attribute name="endQuote"><xsl:text>&#8217;</xsl:text></xsl:attribute>			
 				</xsl:if>
-				<xsl:choose>
-					<xsl:when test="ListItem">
-						<blockList>
-							<xsl:apply-templates />
-						</blockList>
-					</xsl:when>
-					<xsl:otherwise>
-						<xsl:apply-templates>
-							<xsl:with-param name="context" select="'quote'" tunnel="yes" />
-						</xsl:apply-templates>
-					</xsl:otherwise>
-				</xsl:choose>
+				<xsl:apply-templates />
 			</quotedStructure>
 		</mod>
 		<xsl:if test="following-sibling::*[1][self::AppendText]">
@@ -1088,19 +1639,6 @@ helper template is called from the mapping templates for <num>, <heading> and <s
 			<xsl:apply-templates />
 		</quotedText>
 	</mod>
-</xsl:template>
-
-
-<!-- BlockExtract -->
-
-<xsl:template match="BlockExtract">
-	<p>
-		<embeddedStructure>
-			<xsl:apply-templates>
-				<xsl:with-param name="context" select="'quote'" tunnel="yes" />
-			</xsl:apply-templates>
-		</embeddedStructure>
-	</p>
 </xsl:template>
 
 
@@ -1142,23 +1680,9 @@ helper template is called from the mapping templates for <num>, <heading> and <s
 <!-- lists -->
 
 <xsl:template match="UnorderedList | OrderedList">
-	<xsl:param name="wrap" as="xs:boolean" select="false()" />
-	<xsl:choose>
-		<xsl:when test="$wrap">
-			<hcontainer name="wrapper">
-				<content>
-					<blockList class="{ lower-case(substring(local-name(), 1, string-length(local-name()) - 4)) }">
-						<xsl:apply-templates />
-					</blockList>
-				</content>
-			</hcontainer>
-		</xsl:when>
-		<xsl:otherwise>
-			<blockList class="{ lower-case(substring(local-name(), 1, string-length(local-name()) - 4)) }">
-				<xsl:apply-templates />
-			</blockList>
-		</xsl:otherwise>
-	</xsl:choose>
+	<blockList class="{lower-case(substring(local-name(), 1, string-length(local-name()) - 4))}">
+		<xsl:apply-templates />
+	</blockList>
 </xsl:template>
 
 <xsl:template match="KeyList">
@@ -1182,7 +1706,7 @@ helper template is called from the mapping templates for <num>, <heading> and <s
 		<xsl:if test="$key">
 			<heading><xsl:apply-templates select="$key" /></heading>
 		</xsl:if>
-		<xsl:if test="parent::OrderedList or @NumberOverride">
+		<xsl:if test="parent::OrderedList">
 			<xsl:variable name="num">
 				<xsl:choose>
 					<xsl:when test="@NumberOverride">
@@ -1207,7 +1731,7 @@ helper template is called from the mapping templates for <num>, <heading> and <s
 				</xsl:choose>
 			</xsl:variable>
 			<num>
-<!-- 				<xsl:attribute name="title">
+				<xsl:attribute name="title">
 					<xsl:choose>
 						<xsl:when test="../@Decoration = 'parens'">(</xsl:when>
 						<xsl:when test="../@Decoration = 'parenRight'"></xsl:when>
@@ -1227,13 +1751,11 @@ helper template is called from the mapping templates for <num>, <heading> and <s
 						<xsl:when test="../@Decoration = 'colon'">:</xsl:when>
 						<xsl:otherwise></xsl:otherwise>
 					</xsl:choose>
-				</xsl:attribute> -->
+				</xsl:attribute>
 				<xsl:value-of select="$num" />
 			</num>
 		</xsl:if>
-		<xsl:apply-templates>
-			<xsl:with-param name="context" select="'block'" tunnel="yes" />
-		</xsl:apply-templates>
+		<xsl:apply-templates />
 	</item>
 </xsl:template>
 
@@ -1306,22 +1828,20 @@ helper template is called from the mapping templates for <num>, <heading> and <s
 			<xsl:attribute name="style"><xsl:value-of select="$style-attrs" separator=";" /></xsl:attribute>
 		</xsl:if>
 		<xsl:choose>
-			<xsl:when test="Part | Chapter | Pblock | PsubBlock | P1 | P1group | P2 | P2group | P3 | P4 | P5 | P6 |
-				EUPart | EUTitle | EUChapter | EUSection | EUSubsection | Division">
-				<p>
-					<subFlow name="wrapper">
-						<xsl:apply-templates />
-					</subFlow>
-				</p>
+			<xsl:when test="text() | Character">
+				<p><xsl:apply-templates /></p>
 			</xsl:when>
 			<xsl:when test="Para">
 				<xsl:apply-templates />
 			</xsl:when>
-			<xsl:when test="Emphasis | Strong | Underline | SmallCaps | Uppercase | Expanded | Abbreviation | Acronym | Addition | Repeal | Substitution | Citation | Span | FootnoteRef | Superior | Inferior | Character">
+			<xsl:when test="Emphasis | Strong | Underline | SmallCaps | Abbreviation | Acronym | Addition | Repeal | Substitution | Citation">
+				<p><xsl:apply-templates /></p>
+			</xsl:when>
+			<xsl:when test="Part | Chapter | Pblock | PsubBlock | P1 | P1group | P2 | P2group | P3 | P4 | P5 | P6">
 				<p>
-					<xsl:apply-templates>
-						<xsl:with-param name="wrapped" select="true()" />
-					</xsl:apply-templates>
+					<subFlow name="wrapper">
+						<xsl:apply-templates />
+					</subFlow>
 				</p>
 			</xsl:when>
 			<xsl:otherwise>
@@ -1331,25 +1851,6 @@ helper template is called from the mapping templates for <num>, <heading> and <s
 	</xsl:element>
 </xsl:template>
 
-<xsl:template match="html:th/text() | html:td/text()">
-	<xsl:param name="wrapped" as="xs:boolean" select="false()" />
-	<xsl:choose>
-		<xsl:when test="$wrapped">
-			<xsl:next-match />
-		</xsl:when>
-		<xsl:otherwise>
-			<p>
-				<xsl:next-match />
-			</p>
-		</xsl:otherwise>
-	</xsl:choose>
-</xsl:template>
-
-<xsl:template match="html:td/Image">
-	<p>
-		<xsl:next-match />
-	</p>
-</xsl:template>
 
 <!-- images -->
 
@@ -1447,23 +1948,12 @@ helper template is called from the mapping templates for <num>, <heading> and <s
 
 <xsl:template match="ScheduleBody | AppendixBody">
 	<xsl:variable name="wrap" select="count(Part | Chapter | Pblock | PsubBlock | P1 | P1group | P2 | P2group | P3 | P4 | P5 | P6 |
-			P/Part | P/Chapter | P/Pblock | P/PsubBlock | P/P1 | P/P1group | P/P2 | P/P2group | P/P3 | P/P4 | P/P5 | P/P6 |
-			EUPart | EUTitle | EUChapter | EUSection | EUSubsection | Division) > 0" />
-	<xsl:variable name="appendix" as="xs:boolean" select="exists(following-sibling::Appendix)" />
+			P/Part | P/Chapter | P/Pblock | P/PsubBlock | P/P1 | P/P1group | P/P2 | P/P2group | P/P3 | P/P4 | P/P5 | P/P6) > 0" />
 	<xsl:choose>
 		<xsl:when test="$wrap">
 			<xsl:apply-templates select="*[not(self::CommentaryRef)]">
 				<xsl:with-param name="wrap" select="true()" />
 			</xsl:apply-templates>
-		</xsl:when>
-		<xsl:when test="$appendix">
-			<hcontainer name="wrapper">
-				<content>
-					<xsl:apply-templates>
-				<xsl:with-param name="wrap" select="false()" />
-					</xsl:apply-templates>
-				</content>
-			</hcontainer>
 		</xsl:when>
 		<xsl:otherwise>
 			<content>
@@ -1475,45 +1965,9 @@ helper template is called from the mapping templates for <num>, <heading> and <s
 	</xsl:choose>
 </xsl:template>
 
-<xsl:template match="ScheduleBody/Figure | AppendixBody/Figure">
-	<xsl:param name="wrap" as="xs:boolean" select="false()" />
-	<xsl:choose>
-		<xsl:when test="$wrap">
-			<hcontainer name="wrapper">
-				<content>
-					<xsl:next-match />
-				</content>
-			</hcontainer>
-		</xsl:when>
-		<xsl:otherwise>
-			<xsl:next-match />
-		</xsl:otherwise>
-	</xsl:choose>
-</xsl:template>
-
-
 
 <!-- conclusions -->
 
-<xsl:template match="ScheduleBody/SignedSection">
-	<xsl:param name="wrap" as="xs:boolean" select="false()" />
-	<xsl:choose>
-		<xsl:when test="$wrap">
-			<wrapUp>
-				<blockContainer class="signatures">
-					<xsl:call-template name="period" />
-					<xsl:apply-templates />
-				</blockContainer>
-			</wrapUp>
-		</xsl:when>
-		<xsl:otherwise>
-			<blockContainer class="signatures">
-				<xsl:call-template name="period" />
-				<xsl:apply-templates />
-			</blockContainer>
-		</xsl:otherwise>
-	</xsl:choose>
-</xsl:template>
 <xsl:template match="Schedules/SignedSection">
 	<wrapUp>
 		<blockContainer class="signatures">
@@ -1612,21 +2066,13 @@ helper template is called from the mapping templates for <num>, <heading> and <s
 		<xsl:attribute name="eId">
 			<xsl:value-of select="clml2akn:id(.)" />
 		</xsl:attribute>
-		<xsl:apply-templates>
-			<xsl:with-param name="context" select="'block'" tunnel="yes" />
-		</xsl:apply-templates>
+		<xsl:apply-templates />
 	</note>
 </xsl:template>
 
-<!-- this should be changed for 2.0? all footnotes should be in Notes section?? -->
 <xsl:template match="Footnote[not(parent::Footnotes)]">	<!-- e.g., in table cells -->
-	<tblock class="footnote" eId="{@id}">
-		<xsl:apply-templates>
-			<xsl:with-param name="context" select="'block'" tunnel="yes" />
-		</xsl:apply-templates>
-	</tblock>
+	<tblock class="footnote" eId="{@id}"><xsl:apply-templates /></tblock>
 </xsl:template>
-
 
 <xsl:template match="@CommentaryRef">
 	<xsl:variable name="type" select="key('id', .)/@Type" />
@@ -1816,15 +2262,6 @@ helper template is called from the mapping templates for <num>, <heading> and <s
 		<xsl:when test="@Name = 'Minus'">&#x2212;</xsl:when>
 		<xsl:when test="@Name = 'ThinSpace'">&#x2009;</xsl:when>
 	</xsl:choose>
-</xsl:template>
-
-
-<!-- attributes -->
-
-<xsl:template match="@id">
-	<xsl:attribute name="eId">
-		<xsl:value-of select="." />
-	</xsl:attribute>
 </xsl:template>
 
 
