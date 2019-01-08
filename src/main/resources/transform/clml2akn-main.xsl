@@ -1247,7 +1247,7 @@ helper template is called from the mapping templates for <num>, <heading> and <s
 			<hcontainer name="tabular">
 				<xsl:apply-templates select="Number | Title | Subtitle" />
 				<content>
-					<xsl:apply-templates select="*[not(self::Number)][not(self::Title)][not(self::SubTitle)]" />
+					<xsl:apply-templates select="*[not(self::Number)][not(self::Title)][not(self::Subtitle)]" />
 				</content>
 			</hcontainer>
 		</xsl:when>
