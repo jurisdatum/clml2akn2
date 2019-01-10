@@ -21,6 +21,7 @@
 <xsl:output method="xml" version="1.0" encoding="utf-8" omit-xml-declaration="no" indent="yes" />
 <xsl:strip-space elements="*" />
 
+<xsl:include href="clml2akn-functions.xsl" />
 <xsl:include href="clml2akn-metadata.xsl" />
 <xsl:include href="clml2akn-eu.xsl" />
 
@@ -1306,18 +1307,14 @@ helper template is called from the mapping templates for <num>, <heading> and <s
 			<xsl:attribute name="style"><xsl:value-of select="$style-attrs" separator=";" /></xsl:attribute>
 		</xsl:if>
 		<xsl:choose>
-			<xsl:when test="Part | Chapter | Pblock | PsubBlock | P1 | P1group | P2 | P2group | P3 | P4 | P5 | P6 |
-				EUPart | EUTitle | EUChapter | EUSection | EUSubsection | Division">
+			<xsl:when test="some $child in * satisfies clml2akn:is-hcontainer($child)">
 				<p>
 					<subFlow name="wrapper">
 						<xsl:apply-templates />
 					</subFlow>
 				</p>
 			</xsl:when>
-			<xsl:when test="Para">
-				<xsl:apply-templates />
-			</xsl:when>
-			<xsl:when test="Emphasis | Strong | Underline | SmallCaps | Uppercase | Expanded | Abbreviation | Acronym | Addition | Repeal | Substitution | Citation | Span | FootnoteRef | Superior | Inferior | Character">
+			<xsl:when test="every $child in * satisfies clml2akn:is-inline($child)">
 				<p>
 					<xsl:apply-templates>
 						<xsl:with-param name="wrapped" select="true()" />
@@ -1325,10 +1322,34 @@ helper template is called from the mapping templates for <num>, <heading> and <s
 				</p>
 			</xsl:when>
 			<xsl:otherwise>
-				<xsl:apply-templates />
+				<xsl:call-template name="wrap-inline-children" />
 			</xsl:otherwise>
 		</xsl:choose>
 	</xsl:element>
+</xsl:template>
+
+<xsl:template name="wrap-inline-children">
+	<xsl:for-each select="node()">
+		<xsl:choose>
+			<xsl:when test="self::text()">
+				<p>
+					<xsl:apply-templates select=".">
+						<xsl:with-param name="wrapped" select="true()" />
+					</xsl:apply-templates>
+				</p>
+			</xsl:when>
+			<xsl:when test="clml2akn:is-inline(.)">
+				<p>
+					<xsl:apply-templates select=".">
+						<xsl:with-param name="wrapped" select="true()" />
+					</xsl:apply-templates>
+				</p>
+			</xsl:when>
+			<xsl:otherwise>
+				<xsl:apply-templates select="." />
+			</xsl:otherwise>
+		</xsl:choose>
+	</xsl:for-each>
 </xsl:template>
 
 <xsl:template match="html:th/text() | html:td/text()">
@@ -1391,7 +1412,15 @@ helper template is called from the mapping templates for <num>, <heading> and <s
 <!-- math -->
 
 <xsl:template match="Span[math:math]">
-	<subFlow name="wrapper"><xsl:call-template name="foreign" /></subFlow>
+	<xsl:param name="wrapped" as="xs:boolean" select="false()" />
+	<xsl:choose>
+		<xsl:when test="false()">
+			<p><subFlow name="wrapper"><xsl:call-template name="foreign" /></subFlow></p>
+		</xsl:when>
+		<xsl:otherwise>
+			<subFlow name="wrapper"><xsl:call-template name="foreign" /></subFlow>
+		</xsl:otherwise>
+	</xsl:choose>
 </xsl:template>
 
 <xsl:template match="Formula" name="foreign">
