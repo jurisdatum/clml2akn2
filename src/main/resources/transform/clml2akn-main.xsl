@@ -1163,9 +1163,23 @@ helper template is called from the mapping templates for <num>, <heading> and <s
 </xsl:template>
 
 <xsl:template match="KeyList">
-	<blockList class="{string-join(('Key', @Separator), ' ')}">
-		<xsl:apply-templates />
-	</blockList>
+	<xsl:param name="wrap" as="xs:boolean" select="false()" />
+	<xsl:choose>
+		<xsl:when test="$wrap">
+			<hcontainer name="wrapper">
+				<content>
+					<blockList class="{ string-join(('Key', @Separator), ' ') }">
+						<xsl:apply-templates />
+					</blockList>
+				</content>
+			</hcontainer>
+		</xsl:when>
+		<xsl:otherwise>
+			<blockList class="{ string-join(('Key', @Separator), ' ') }">
+				<xsl:apply-templates />
+			</blockList>
+		</xsl:otherwise>
+	</xsl:choose>
 </xsl:template>
 
 <xsl:template match="KeyListItem">
@@ -1374,16 +1388,34 @@ helper template is called from the mapping templates for <num>, <heading> and <s
 
 <!-- images -->
 
-<xsl:template match="Figure[Title]">
-	<tblock class="figure"><xsl:apply-templates /></tblock>
-</xsl:template>
 <xsl:template match="Figure">
-	<block name="figure"><xsl:apply-templates /></block>
+	<xsl:param name="wrap" as="xs:boolean" select="false()" />
+	<xsl:choose>
+		<xsl:when test="$wrap">
+			<hcontainer name="figure">
+				<xsl:apply-templates select="Title | Subtitle" />
+				<content>
+					<xsl:apply-templates select="*[not(self::Title) and not(self::Subtitle)]" />
+				</content>
+			</hcontainer>
+		</xsl:when>
+		<xsl:when test="Title">
+			<tblock class="figure">
+				<xsl:apply-templates />
+			</tblock>
+		</xsl:when>
+		<xsl:otherwise>
+			<container name="figure">
+				<xsl:apply-templates />
+			</container>
+		</xsl:otherwise>
+	</xsl:choose>
 </xsl:template>
 
-<xsl:template match="Figure[Title]/Image">
+<xsl:template match="Figure/Image">
 	<p><xsl:next-match /></p>
 </xsl:template>
+
 <xsl:template match="Image">
 	<img>
 		<xsl:attribute name="src">
@@ -1475,24 +1507,32 @@ helper template is called from the mapping templates for <num>, <heading> and <s
 </xsl:template>
 
 <xsl:template match="ScheduleBody | AppendixBody">
-	<xsl:variable name="wrap" select="count(Part | Chapter | Pblock | PsubBlock | P1 | P1group | P2 | P2group | P3 | P4 | P5 | P6 |
+	<xsl:comment>body</xsl:comment>
+	<xsl:variable name="wrap" select="exists(Part | Chapter | Pblock | PsubBlock | P1 | P1group | P2 | P2group | P3 | P4 | P5 | P6 |
 			P/Part | P/Chapter | P/Pblock | P/PsubBlock | P/P1 | P/P1group | P/P2 | P/P2group | P/P3 | P/P4 | P/P5 | P/P6 |
-			EUPart | EUTitle | EUChapter | EUSection | EUSubsection | Division) > 0" />
-	<xsl:variable name="appendix" as="xs:boolean" select="exists(following-sibling::Appendix)" />
+			EUPart | EUTitle | EUChapter | EUSection | EUSubsection | Division)" />
+	<xsl:variable name="has-appendix" as="xs:boolean" select="exists(following-sibling::Appendix)" />
 	<xsl:choose>
+		<xsl:when test="$has-appendix and $wrap">
+			<hcontainer name="body">
+				<xsl:apply-templates select="*[not(self::CommentaryRef)]">
+					<xsl:with-param name="wrap" select="true()" />
+				</xsl:apply-templates>
+			</hcontainer>
+		</xsl:when>
+		<xsl:when test="$has-appendix">
+			<hcontainer name="body">
+				<content>
+					<xsl:apply-templates select="*[not(self::CommentaryRef)]">
+						<xsl:with-param name="wrap" select="false()" />
+					</xsl:apply-templates>
+				</content>
+			</hcontainer>
+		</xsl:when>
 		<xsl:when test="$wrap">
 			<xsl:apply-templates select="*[not(self::CommentaryRef)]">
 				<xsl:with-param name="wrap" select="true()" />
 			</xsl:apply-templates>
-		</xsl:when>
-		<xsl:when test="$appendix">
-			<hcontainer name="wrapper">
-				<content>
-					<xsl:apply-templates>
-				<xsl:with-param name="wrap" select="false()" />
-					</xsl:apply-templates>
-				</content>
-			</hcontainer>
 		</xsl:when>
 		<xsl:otherwise>
 			<content>
@@ -1524,7 +1564,7 @@ helper template is called from the mapping templates for <num>, <heading> and <s
 
 <!-- conclusions -->
 
-<xsl:template match="ScheduleBody/SignedSection">
+<xsl:template match="ScheduleBody/SignedSection | AppendixBody/SignedSection">
 	<xsl:param name="wrap" as="xs:boolean" select="false()" />
 	<xsl:choose>
 		<xsl:when test="$wrap">
