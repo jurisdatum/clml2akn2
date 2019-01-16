@@ -1168,14 +1168,24 @@ helper template is called from the mapping templates for <num>, <heading> and <s
 		<xsl:when test="$wrap">
 			<hcontainer name="wrapper">
 				<content>
-					<blockList class="{ string-join(('Key', @Separator), ' ') }">
+					<blockList class="key">
+						<xsl:if test="@Separator">
+							<xsl:attribute name="separator" namespace="http://www.legislation.gov.uk/namespaces/legislation">
+								<xsl:value-of select="@Separator" />
+							</xsl:attribute>
+						</xsl:if>
 						<xsl:apply-templates />
 					</blockList>
 				</content>
 			</hcontainer>
 		</xsl:when>
 		<xsl:otherwise>
-			<blockList class="{ string-join(('Key', @Separator), ' ') }">
+			<blockList class="key">
+				<xsl:if test="@Separator">
+					<xsl:attribute name="separator" namespace="http://www.legislation.gov.uk/namespaces/legislation">
+						<xsl:value-of select="@Separator" />
+					</xsl:attribute>
+				</xsl:if>
 				<xsl:apply-templates />
 			</blockList>
 		</xsl:otherwise>
@@ -1405,9 +1415,9 @@ helper template is called from the mapping templates for <num>, <heading> and <s
 			</tblock>
 		</xsl:when>
 		<xsl:otherwise>
-			<container name="figure">
+			<blockContainer class="figure">
 				<xsl:apply-templates />
-			</container>
+			</blockContainer>
 		</xsl:otherwise>
 	</xsl:choose>
 </xsl:template>
@@ -1507,7 +1517,6 @@ helper template is called from the mapping templates for <num>, <heading> and <s
 </xsl:template>
 
 <xsl:template match="ScheduleBody | AppendixBody">
-	<xsl:comment>body</xsl:comment>
 	<xsl:variable name="wrap" select="exists(Part | Chapter | Pblock | PsubBlock | P1 | P1group | P2 | P2group | P3 | P4 | P5 | P6 |
 			P/Part | P/Chapter | P/Pblock | P/PsubBlock | P/P1 | P/P1group | P/P2 | P/P2group | P/P3 | P/P4 | P/P5 | P/P6 |
 			EUPart | EUTitle | EUChapter | EUSection | EUSubsection | Division)" />

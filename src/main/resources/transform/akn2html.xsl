@@ -536,10 +536,10 @@
 
 <xsl:template match="blockList[@class='key']">
 	<dl>
-		<xsl:if test="@ukl:Separator = '='">
+		<xsl:if test="@ukl:separator = '='">
 			<xsl:attribute name="class">equals</xsl:attribute>
 		</xsl:if>
-		<xsl:apply-templates select="@*[name()!='class'][name()!='ukl:Separator']" />
+		<xsl:apply-templates select="@*[name()!='class'][local-name()!='separator']" />
 		<xsl:apply-templates />
 	</dl>
 </xsl:template>
