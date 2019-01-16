@@ -17,6 +17,9 @@
 		<xsl:when test="$name = ('P1', 'P1group', 'P2', 'P2group', 'P3', 'P4', 'P5', 'P6')">
 			<xsl:value-of select="true()" />
 		</xsl:when>
+		<xsl:when test="$name = ('Schedules', 'Schedule', 'Appendix', 'AttachmentGroup', 'Attachment')">
+			<xsl:value-of select="true()" />
+		</xsl:when>
 		<xsl:when test="$name = ('EUPart', 'EUTitle', 'EUChapter', 'EUSection', 'EUSubsection', 'Division')">
 			<xsl:value-of select="true()" />
 		</xsl:when>
