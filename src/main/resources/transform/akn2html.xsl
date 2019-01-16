@@ -369,7 +369,7 @@
 <!-- pure containers: part, chapter, crossheading -->
 
 <xsl:template match="part | chapter | hcontainer[@name='crossheading'] | hcontainer[@name='P1group'] |
-		hcontainer[@name='schedules'] | hcontainer[@name='schedule']">
+		hcontainer[@name='schedules'] | hcontainer[@name='schedule'] | level">
 	<section>
 		<xsl:call-template name="attrs" />
 		<h2>
