@@ -384,14 +384,16 @@
 
 <!-- pure containers: part, chapter, crossheading -->
 
-<xsl:template match="part | chapter | hcontainer[@name='crossheading'] | hcontainer[@name='P1group'] |
+<xsl:template match="hcontainer[@name='group'] | title | part | chapter | hcontainer[@name='crossheading'] | hcontainer[@name='P1group'] |
 		hcontainer[@name='schedules'] | hcontainer[@name='schedule'] | level">
 	<section>
 		<xsl:call-template name="attrs" />
-		<h2>
-			<xsl:call-template name="extent" />
-			<xsl:apply-templates select="num | heading | subheading" />			
-		</h2>
+		<xsl:if test="exists(num | heading | subheading)">
+			<h2>
+				<xsl:call-template name="extent" />
+				<xsl:apply-templates select="num | heading | subheading" />
+			</h2>
+		</xsl:if>
 		<xsl:apply-templates select="num//authorialNote | heading//authorialNote | subheading//authorialNote" />
 		<xsl:call-template name="annotations">
 			<xsl:with-param name="wrapper-element-name" select="'header'" />
@@ -559,7 +561,7 @@
 
 <!-- blocks -->
 
-<xsl:template match="p[docTitle] | p[shortTitle] | p[mod[quotedStructure]] | p[subFlow] | p[authorialNote]">
+<xsl:template match="p[docTitle] | p[shortTitle] | p[mod[quotedStructure]] | p[embeddedStructure] | p[subFlow] | p[authorialNote]">
 	<div>
 		<xsl:call-template name="attrs" />
 		<xsl:if test="mod/quotedStructure/*[1][self::p][@class='run-on']">
@@ -642,8 +644,8 @@
 	</xsl:for-each>
 </xsl:template>
 
-<xsl:template match="quotedStructure">
-	<blockquote>
+<xsl:template match="quotedStructure | embeddedStructure">
+	<blockquote class="{ local-name() }">
 		<xsl:apply-templates select="@*[not(name()='startQuote')][not(name()='endQuote')]" />
 		<xsl:if test="*[1][@class='run-on']">
 			<xsl:attribute name="style">
