@@ -746,9 +746,18 @@
 		<xsl:choose>
 			<xsl:when test="@altimg and not(math:semantics)">
 				<semantics>
-					<xsl:apply-templates />
+					<xsl:choose>
+						<xsl:when test="every $child in * satisfies $child/self::math:mrow">
+							<xsl:apply-templates />
+						</xsl:when>
+						<xsl:otherwise>
+							<mrow>
+								<xsl:apply-templates />
+							</mrow>
+						</xsl:otherwise>
+					</xsl:choose>
 					<annotation-xml encoding="MathML-Presentation">
-						<mtext><img src="{@altimg}" /></mtext>
+						<mtext><img src="{ @altimg }" alt="math" /></mtext>
 					</annotation-xml>
 				</semantics>
 			</xsl:when>
