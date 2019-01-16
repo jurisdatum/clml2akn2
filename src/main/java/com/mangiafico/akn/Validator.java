@@ -2,6 +2,7 @@ package com.mangiafico.akn;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.PrintStream;
 import java.util.LinkedList;
 import java.util.List;
 
@@ -101,5 +102,17 @@ public class Validator {
 			errors.add(exception);
 		}
 	}
+	
+	public static void printError(SAXException error, PrintStream out) {
+		if (error instanceof SAXParseException) {
+			out.print("line ");
+			out.print(((SAXParseException) error).getLineNumber());
+			out.print(", column ");
+			out.print(((SAXParseException) error).getColumnNumber());
+			out.print(", ");
+		}
+		out.println(error.getLocalizedMessage());
+	}
+
 
 }
