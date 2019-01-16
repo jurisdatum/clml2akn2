@@ -363,6 +363,22 @@
 	</div>
 </xsl:template>
 
+<xsl:template match="attachment">
+	<xsl:apply-templates />
+</xsl:template>
+
+<xsl:template match="doc">
+	<article>
+		<xsl:apply-templates select="@name" />
+		<xsl:variable name="category" as="xs:string?" select="meta/proprietary/ukm:*/ukm:DocumentClassification/ukm:DocumentCategory/@Value" />
+		<xsl:if test="exists($category)">
+			<xsl:attribute name="class">
+				<xsl:value-of select="$category" />
+			</xsl:attribute>
+		</xsl:if>
+		<xsl:apply-templates />
+	</article>
+</xsl:template>
 
 <!-- hierarchy -->
 
@@ -463,6 +479,13 @@
 		<xsl:apply-templates />
 	</div>
 </xsl:template>
+
+
+<!-- wrappers -->
+<xsl:template match="hcontainer[@name='wrapper'][every $child in * satisfies $child/self::content]">
+	<xsl:apply-templates select="content/node()" />
+</xsl:template>
+
 
 
 <!-- LISTS (ordered, unordered, and key) -->
