@@ -22,6 +22,7 @@
 
 <xsl:key name="id" match="*" use="@eId" />
 <xsl:key name="note" match="note" use="@eId" />
+<xsl:key name="note-ref" match="noteRef" use="substring(@href, 2)" />
 <xsl:key name="extent" match="restriction" use="if (ends-with(@href, ']')) then substring-before(substring(@href,2), '[') else substring(@href,2)" />
 
 <xsl:variable name="primary" as="xs:boolean" select="/akomaNtoso/*/meta/proprietary/ukm:*/ukm:DocumentClassification/ukm:DocumentCategory/@Value = 'primary'" />
@@ -227,7 +228,7 @@
 <xsl:template name="display-notes">
 	<xsl:param name="note-refs" as="element()*" />
 	<xsl:param name="heading" as="xs:string" />
-	<xsl:if test="count($note-refs) > 0">
+	<xsl:if test="exists($note-refs)">
 		<div class="{tokenize($note-refs[1]/@class, ' ')[last()]}">
 			<div><xsl:value-of select="$heading" /></div>
 			<xsl:for-each select="$note-refs">
@@ -306,11 +307,15 @@
 </xsl:template>
 
 <xsl:template name="footnotes">
-	<xsl:variable name="note-refs" select="//noteRef[@class='footnote']" />
-	<xsl:if test="count($note-refs) > 0">
+	<xsl:variable name="notes" as="element()*" select="/akomaNtoso/*/meta/notes/note[@class='footnote']" />
+	<xsl:if test="exists($notes)">
 		<footer class="footnotes">
-			<xsl:for-each select="$note-refs">
-				<xsl:call-template name="display-note" />
+			<xsl:for-each select="$notes">
+				<xsl:variable name="id" as="xs:string" select="@eId" />
+				<xsl:variable name="note-ref" as="element()" select="key('note-ref', $id)[1]" />
+				<xsl:for-each select="$note-ref">
+					<xsl:call-template name="display-note" />
+				</xsl:for-each>
 			</xsl:for-each>
 		</footer>
 	</xsl:if>
