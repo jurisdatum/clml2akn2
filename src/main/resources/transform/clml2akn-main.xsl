@@ -1256,9 +1256,20 @@ helper template is called from the mapping templates for <num>, <heading> and <s
 				<xsl:value-of select="$num" />
 			</num>
 		</xsl:if>
-		<xsl:apply-templates>
-			<xsl:with-param name="context" select="'block'" tunnel="yes" />
-		</xsl:apply-templates>
+		<xsl:choose>
+			<xsl:when test="exists($key) and count(*) > 1">
+				<blockContainer>
+					<xsl:apply-templates>
+						<xsl:with-param name="context" select="'block'" tunnel="yes" /><!-- ?? -->
+					</xsl:apply-templates>
+				</blockContainer>
+			</xsl:when>
+			<xsl:otherwise>
+				<xsl:apply-templates>
+					<xsl:with-param name="context" select="'block'" tunnel="yes" />
+				</xsl:apply-templates>
+			</xsl:otherwise>
+		</xsl:choose>
 	</item>
 </xsl:template>
 

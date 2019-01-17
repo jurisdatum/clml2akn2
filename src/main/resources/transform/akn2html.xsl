@@ -559,7 +559,7 @@
 	<dt><xsl:apply-templates select="@*|node()" /></dt>
 </xsl:template>
 
-<xsl:template match="blockList[@class='key']/item/p">
+<xsl:template match="blockList[@class='key']/item/*[not(self::heading)]">
 	<dd><xsl:apply-templates select="@*|node()" /></dd>
 </xsl:template>
 
