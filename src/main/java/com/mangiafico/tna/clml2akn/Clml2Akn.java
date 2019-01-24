@@ -1,5 +1,6 @@
 package com.mangiafico.tna.clml2akn;
 
+import java.io.IOException;
 import java.io.InputStream;
 
 import javax.xml.transform.Source;
@@ -12,7 +13,6 @@ import com.mangiafico.akn.Akn;
 import com.mangiafico.tna.Clml;
 
 import net.sf.saxon.Configuration;
-import net.sf.saxon.om.NodeInfo;
 import net.sf.saxon.s9api.Processor;
 import net.sf.saxon.s9api.SaxonApiException;
 import net.sf.saxon.s9api.XdmDestination;
@@ -31,7 +31,7 @@ public class Clml2Akn implements URIResolver {
 		return new StreamSource(file);
 	}
 	
-	public Clml2Akn(Configuration config) {
+	public Clml2Akn(Configuration config) throws IOException {
 		XsltCompiler compiler = new Processor(config).newXsltCompiler();
 		compiler.setURIResolver(this);
 		InputStream file = Clml2Akn.class.getResourceAsStream(stylesheet);
@@ -39,10 +39,12 @@ public class Clml2Akn implements URIResolver {
 			executable = compiler.compile(new StreamSource(file));
 		} catch (SaxonApiException e) {
 			throw new RuntimeException(e);
+		} finally {
+			file.close();
 		}
 	}
 
-	public Clml2Akn() {
+	public Clml2Akn() throws IOException {
 		this(Xml.processor.getUnderlyingConfiguration());
 	}
 	
@@ -57,13 +59,6 @@ public class Clml2Akn implements URIResolver {
 			throw new RuntimeException(e);
 		}
 		return akn.getXdmNode();
-	}
-	
-	public static XdmNode transform1(XdmNode clml) {
-		NodeInfo info = clml.getUnderlyingNode();
-		Configuration config = info.getConfiguration();
-		Clml2Akn transform = new Clml2Akn(config);
-		return transform.transform(clml);
 	}
 
 	public Akn transform(Clml clml) {
