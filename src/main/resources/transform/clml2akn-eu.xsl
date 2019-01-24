@@ -7,9 +7,11 @@
 	xpath-default-namespace="http://www.legislation.gov.uk/namespaces/legislation"
 	xmlns:xsl="http://www.w3.org/1999/XSL/Transform"
 	xmlns:xs="http://www.w3.org/2001/XMLSchema"
+	xmlns:ukm="http://www.legislation.gov.uk/namespaces/metadata"
 	xmlns:clml2akn="http://clml2akn.mangiafico.com/"
-	exclude-result-prefixes="xs clml2akn">
+	exclude-result-prefixes="xs ukm clml2akn">
 
+<xsl:template match="ukm:EURLexMetadata" priority="1" />
 
 <xsl:template match="Legislation/EURetained">
 	<xsl:choose>
@@ -150,8 +152,17 @@
 
 <!-- signatures -->
 
+<xsl:template match="EURetained//Signatory">
+	<xsl:apply-templates select="Para" />
+	<xsl:if test="exists(Signee)">
+		<blockContainer class="signees">
+			<xsl:apply-templates select="Signee" />
+		</blockContainer>
+	</xsl:if>
+</xsl:template>
+
 <xsl:template match="EURetained//Signee">
-	<blockContainer>
+	<blockContainer class="signee">
 		<xsl:apply-templates />
 	</blockContainer>
 </xsl:template>
