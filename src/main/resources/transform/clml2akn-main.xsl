@@ -1107,7 +1107,7 @@ helper template is called from the mapping templates for <num>, <heading> and <s
 
 <!-- changes -->
 
-<xsl:key name="change" match="Addition | Repeal | Substitution" use="@ChangeId" />
+<xsl:key name="change" match="Addition[not(ancestor::Footnote)] | Repeal[not(ancestor::Footnote)] | Substitution[not(ancestor::Footnote)]" use="@ChangeId" />
 
 <xsl:template name="change">
 	<xsl:variable name="classes" as="xs:string*">
