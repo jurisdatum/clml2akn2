@@ -11,12 +11,13 @@
 	xmlns:ukl="http://www.legislation.gov.uk/namespaces/legislation"
 	xmlns:ukm="http://www.legislation.gov.uk/namespaces/metadata"
 	xmlns:dc="http://purl.org/dc/elements/1.1/"
+	xmlns:dct="http://purl.org/dc/terms/"
 	xmlns:atom="http://www.w3.org/2005/Atom"
 	xmlns:html="http://www.w3.org/1999/xhtml"
 	xmlns:math="http://www.w3.org/1998/Math/MathML"
 	xmlns:fo="http://www.w3.org/1999/XSL/Format"
 	xmlns:clml2akn="http://clml2akn.mangiafico.com/"
-	exclude-result-prefixes="xs ukl ukm dc atom html math fo clml2akn">
+	exclude-result-prefixes="xs ukl ukm dc dct atom html math fo clml2akn">
 
 <xsl:output method="xml" version="1.0" encoding="utf-8" omit-xml-declaration="no" indent="yes" />
 <xsl:strip-space elements="*" />
@@ -39,7 +40,11 @@
 
 <xsl:variable name="root" select="/" />
 
+<xsl:variable name="doc-category" as="xs:string" select="/Legislation/ukm:Metadata/ukm:*/ukm:DocumentClassification/ukm:DocumentCategory/@Value" />
+
 <xsl:variable name="ukm-doctype" select="/Legislation/ukm:Metadata/ukm:*/ukm:DocumentClassification/ukm:DocumentMainType/@Value" />
+
+<xsl:variable name="doc-status" select="/Legislation/ukm:Metadata/ukm:*/ukm:DocumentClassification/ukm:DocumentStatus/@Value" />
 
 <xsl:variable name="minor-type" select="/Legislation/ukm:Metadata/ukm:SecondaryMetadata/ukm:DocumentClassification/ukm:DocumentMinorType/@Value" />
 
@@ -80,6 +85,23 @@
 	<xsl:analyze-string select="$expr-this" regex="\d{{4}}-\d{{2}}-\d{{2}}$">
 		<xsl:matching-substring><xsl:value-of select="." /></xsl:matching-substring>
 	</xsl:analyze-string>		
+</xsl:variable>
+
+<xsl:variable name="expr-version" as="xs:string">
+	<xsl:choose>
+		<xsl:when test="$doc-status = 'revised'">
+			<xsl:value-of select="/Legislation/ukm:Metadata/dct:valid" />
+		</xsl:when>
+		<xsl:when test="$doc-category = 'primary'">
+			<xsl:text>enacted</xsl:text>
+		</xsl:when>
+		<xsl:when test="$doc-category = 'secondary'">
+			<xsl:text>made</xsl:text>
+		</xsl:when>
+		<xsl:when test="$doc-category = 'euretained'">
+			<xsl:text>adopted</xsl:text>
+		</xsl:when>
+	</xsl:choose>
 </xsl:variable>
 
 <xsl:variable name="this-uri" as="xs:string">
@@ -1440,7 +1462,8 @@ helper template is called from the mapping templates for <num>, <heading> and <s
 <xsl:template match="Image">
 	<img>
 		<xsl:attribute name="src">
-			<xsl:value-of select="key('id', @ResourceRef)/ExternalVersion/@URI" />
+			<xsl:variable name="url" as="xs:string" select="key('id', @ResourceRef)/ExternalVersion/@URI" />
+			<xsl:value-of select="clml2akn:add-version-to-image-url($url, $expr-version)" />
 		</xsl:attribute>
 		<xsl:if test="ends-with(@Width, 'pt') and substring(@Width, 1, string-length(@Width) - 2) castable as xs:decimal">
 	 		<xsl:attribute name="width">

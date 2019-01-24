@@ -92,4 +92,11 @@
 	</xsl:choose>
 </xsl:function>
 
+<xsl:function name="clml2akn:add-version-to-image-url" as="xs:string">
+	<xsl:param name="url" as="xs:string" />
+	<xsl:param name="version" as="xs:string" />
+	<xsl:value-of select="replace($url, '(_en_\d{3})$', concat('_', $version, '$1'))" />
+</xsl:function>
+
+
 </xsl:transform>
