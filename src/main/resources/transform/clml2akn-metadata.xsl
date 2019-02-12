@@ -544,7 +544,9 @@
 			</xsl:for-each-group>
 			
 			<xsl:for-each select="//AddressLine">
-				<TLCLocation eId="{lower-case(translate(.,' ,',''))}" href="/ontology/location/uk.{translate(.,' ,','')}" showAs="{.}" />
+				<xsl:variable name="normalized" as="xs:string" select="normalize-space(.)" />
+				<xsl:variable name="no-commas" as="xs:string" select="translate($normalized, ' ,', '')" />
+				<TLCLocation eId="{ lower-case($no-commas) }" href="/ontology/location/uk.{ $no-commas }" showAs="{ $normalized }" />
 			</xsl:for-each>
 
 			<xsl:for-each select="//JobTitle">
