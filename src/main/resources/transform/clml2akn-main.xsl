@@ -1518,7 +1518,7 @@ helper template is called from the mapping templates for <num>, <heading> and <s
 				<xsl:variable name="version" select="key('id', ../@AltVersionRefs)" />
 				<xsl:variable name="res-id" select="$version/Figure/Image/@ResourceRef | $version/Image/@ResourceRef" />
 				<xsl:variable name="url" select="key('id', $res-id)/ExternalVersion/@URI" />
-				<xsl:value-of select="$url" />
+				<xsl:value-of select="clml2akn:add-version-to-image-url($url, $expr-version)" />
 			</xsl:attribute>
 		</xsl:if>
 		<xsl:apply-templates />
