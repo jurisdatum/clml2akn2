@@ -86,6 +86,12 @@
 		<xsl:when test="$e/self::Strike">
 			<xsl:value-of select="true()" />
 		</xsl:when>
+		<xsl:when test="$e/self::InternalLink">
+			<xsl:value-of select="true()" />
+		</xsl:when>
+		<xsl:when test="$e/self::CommentaryRef">
+			<xsl:value-of select="true()" />
+		</xsl:when>
 		<xsl:otherwise>
 			<xsl:value-of select="false()" />
 		</xsl:otherwise>
