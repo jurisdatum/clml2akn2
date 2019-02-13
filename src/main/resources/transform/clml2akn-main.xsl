@@ -1388,6 +1388,7 @@ helper template is called from the mapping templates for <num>, <heading> and <s
 					</xsl:apply-templates>
 				</p>
 			</xsl:when>
+			<xsl:when test="self::processing-instruction()" />
 			<xsl:when test="clml2akn:is-inline(.)">
 				<p>
 					<xsl:apply-templates select=".">
