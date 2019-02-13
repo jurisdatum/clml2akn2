@@ -320,25 +320,17 @@
 <!-- tables of contents -->
 
 <xsl:template match="Contents">
-	<toc class="body">
-		<xsl:call-template name="period" />
-		<xsl:apply-templates select="*[not(self::ContentsSchedules)]" />
-	</toc>
-	<xsl:apply-templates select="ContentsSchedules" />
-</xsl:template>
-
-<xsl:template match="ContentsSchedules">
-	<toc class="schedules">
+	<toc>
 		<xsl:call-template name="period" />
 		<xsl:apply-templates />
 	</toc>
 </xsl:template>
 
-<xsl:template match="Contents/ContentsTitle | ContentsSchedules/ContentsTitle">
+<xsl:template match="Contents/ContentsTitle">
 	<tocItem level="0" class="title" href=""><xsl:apply-templates /></tocItem>
 </xsl:template>
 
-<xsl:template match="ContentsPart | ContentsChapter | ContentsPblock | ContentsPsubBlock | ContentsItem | ContentsSubItem | ContentsSchedule | ContentsAppendix">
+<xsl:template match="ContentsPart | ContentsChapter | ContentsPblock | ContentsPsubBlock | ContentsItem | ContentsSubItem | ContentsSchedules | ContentsSchedule | ContentsAppendix">
 	<xsl:param name="level" select="1" />
 	<xsl:variable name="class" as="xs:string?">
 		<xsl:choose>
@@ -348,6 +340,7 @@
 			<xsl:when test="self::ContentsPsubBlock">subheading</xsl:when>
 			<xsl:when test="self::ContentsItem">item</xsl:when>
 			<xsl:when test="self::ContentsSubItem">subitem</xsl:when>
+			<xsl:when test="self::ContentsSchedules">schedules</xsl:when>
 			<xsl:when test="self::ContentsSchedule">schedule</xsl:when>
 			<xsl:when test="self::ContentsAppendix">appendix</xsl:when>
 		</xsl:choose>
@@ -1751,18 +1744,20 @@ helper template is called from the mapping templates for <num>, <heading> and <s
 </xsl:template>
 
 <xsl:template match="CommentaryRef">
-	<noteRef href="#{@Ref}">
-		<xsl:variable name="commentary" as="element()?" select="key('id', @Ref)" />
-		<xsl:if test="exists($commentary)">
-			<xsl:attribute name="marker">
-				<xsl:value-of select="$commentary/@Type" />
-				<xsl:value-of select="clml2akn:commentary-num($commentary/@Type, @Ref)" />
+	<xsl:if test="not(following-sibling::node()[1][self::Text])">
+		<noteRef href="#{@Ref}">
+			<xsl:variable name="commentary" as="element()?" select="key('id', @Ref)" />
+			<xsl:if test="exists($commentary)">
+				<xsl:attribute name="marker">
+					<xsl:value-of select="$commentary/@Type" />
+					<xsl:value-of select="clml2akn:commentary-num($commentary/@Type, @Ref)" />
+				</xsl:attribute>
+			</xsl:if>
+			<xsl:attribute name="class">
+				<xsl:value-of select="string-join(('commentary', $commentary/@Type), ' ')" />
 			</xsl:attribute>
-		</xsl:if>
-		<xsl:attribute name="class">
-			<xsl:value-of select="string-join(('commentary', $commentary/@Type), ' ')" />
-		</xsl:attribute>	
-	</noteRef>
+		</noteRef>
+	</xsl:if>
 </xsl:template>
 
 <xsl:template match="MarginNoteRef">
@@ -1882,6 +1877,7 @@ helper template is called from the mapping templates for <num>, <heading> and <s
 				</xsl:choose>
 			</xsl:attribute>
 		</xsl:if>
+		<xsl:apply-templates select="preceding-sibling::node()[1][self::CommentaryRef]" />
 		<xsl:apply-templates />
 	</p>
 </xsl:template>
