@@ -109,7 +109,7 @@
 
 <xsl:function name="clml2akn:parse-date" as="xs:date?">
 	<xsl:param name="text" as="xs:string" />
-	<xsl:analyze-string regex="^(\d{{1,2}})(st|nd|th)? (January|February|March|April|May|June|July|August|September|October|November|December) (\d{{4}})$" select="normalize-space($text)">
+	<xsl:analyze-string regex="(\d{{1,2}})(st|nd|th)? (January|February|March|April|May|June|July|August|September|October|November|December) (\d{{4}})" select="normalize-space($text)">
 		<xsl:matching-substring>
 			<xsl:variable name="day" as="xs:string" select="format-number(number(regex-group(1)), '00')" />
 			<xsl:variable name="months" as="xs:string*" select="('January','February','March','April','May','June','July','August','September','October','November','December')" />

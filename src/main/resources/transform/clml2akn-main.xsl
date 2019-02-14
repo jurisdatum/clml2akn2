@@ -456,7 +456,14 @@
 					<xsl:value-of select="/Legislation/ukm:Metadata/ukm:*/ukm:Sifted/@Date" />
 				</xsl:when>
 				<xsl:when test="parent::MadeDate">
-					<xsl:value-of select="/Legislation/ukm:Metadata/ukm:*/ukm:Made/@Date" />
+					<xsl:choose>
+						<xsl:when test="exists(/Legislation/ukm:Metadata/ukm:*/ukm:Made)">
+							<xsl:value-of select="/Legislation/ukm:Metadata/ukm:*/ukm:Made/@Date" />
+						</xsl:when>
+						<xsl:otherwise>
+							<xsl:value-of select="clml2akn:parse-date(.)" />
+						</xsl:otherwise>
+					</xsl:choose>
 				</xsl:when>
 				<xsl:when test="parent::LaidDate">
 					<xsl:variable name="from-text" as="xs:date?" select="clml2akn:parse-date(.)" />
