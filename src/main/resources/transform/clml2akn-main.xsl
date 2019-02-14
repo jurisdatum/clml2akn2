@@ -1621,19 +1621,31 @@ helper template is called from the mapping templates for <num>, <heading> and <s
 	</xsl:choose>
 </xsl:template>
 <xsl:template match="Schedules/SignedSection">
-	<wrapUp>
-		<blockContainer class="signatures">
-			<xsl:call-template name="period" />		
-			<xsl:apply-templates />
-		</blockContainer>
-	</wrapUp>
+	<xsl:choose>
+		<xsl:when test="following-sibling::Appendix">
+			<hcontainer name="signatures">
+				<xsl:call-template name="period" />
+				<content>
+					<xsl:apply-templates />
+				</content>
+			</hcontainer>
+		</xsl:when>
+		<xsl:otherwise>
+			<wrapUp>
+				<blockContainer class="signatures">
+					<xsl:call-template name="period" />
+					<xsl:apply-templates />
+				</blockContainer>
+			</wrapUp>
+		</xsl:otherwise>
+	</xsl:choose>
 </xsl:template>
 <xsl:template match="SignedSection">
 	<hcontainer name="signatures">
 		<xsl:call-template name="period" />
 		<content>
 			<xsl:apply-templates />
-		</content>	
+		</content>
 	</hcontainer>
 </xsl:template>
 <xsl:template match="Signatory">
