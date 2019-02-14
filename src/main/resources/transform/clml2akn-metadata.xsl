@@ -334,9 +334,9 @@
 			<xsl:if test="ukm:SecondaryMetadata/ukm:Made">
 				<eventRef date="{ukm:SecondaryMetadata/ukm:Made/@Date}" type="generation" eId="made-date" source="#source" />
 			</xsl:if>
-			<xsl:if test="ukm:SecondaryMetadata/ukm:Laid">
-				<eventRef date="{ukm:SecondaryMetadata/ukm:Laid/@Date}" eId="laid-date" source="#source" />
-			</xsl:if>
+			<xsl:for-each select="ukm:SecondaryMetadata/ukm:Laid">
+				<eventRef date="{@Date}" eId="laid-date-{position()}" source="#source" />
+			</xsl:for-each>
 			<xsl:for-each select="ukm:SecondaryMetadata/ukm:ComingIntoForce/ukm:DateTime">
 				<eventRef date="{@Date}" eId="coming-into-force-date-{position()}" source="#source" />
 			</xsl:for-each>

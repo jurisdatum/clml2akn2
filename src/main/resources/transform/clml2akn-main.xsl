@@ -459,14 +459,31 @@
 					<xsl:value-of select="/Legislation/ukm:Metadata/ukm:*/ukm:Made/@Date" />
 				</xsl:when>
 				<xsl:when test="parent::LaidDate">
-					<xsl:value-of select="/Legislation/ukm:Metadata/ukm:*/ukm:Laid/@Date" />
+					<xsl:variable name="from-text" as="xs:date?" select="clml2akn:parse-date(.)" />
+					<xsl:choose>
+						<xsl:when test="exists($from-text)">
+							<xsl:value-of select="$from-text" />
+						</xsl:when>
+						<xsl:otherwise>
+							<xsl:variable name="pos" as="xs:integer" select="count(parent::*/preceding-sibling::LaidDate) + 1" />
+							<xsl:value-of select="/Legislation/ukm:Metadata/ukm:*/ukm:Laid[$pos]/@Date" />
+						</xsl:otherwise>
+					</xsl:choose>
 				</xsl:when>
 				<xsl:when test="parent::ComingIntoForce">
 					<xsl:value-of select="/Legislation/ukm:Metadata/ukm:*/ukm:ComingIntoForce/ukm:DateTime/@Date" />
 				</xsl:when>
 				<xsl:when test="parent::ComingIntoForceClauses">
-					<xsl:variable name="pos" select="count(../preceding-sibling::ComingIntoForceClauses) + 1" as="xs:integer" />
-					<xsl:value-of select="/Legislation/ukm:Metadata/ukm:*/ukm:ComingIntoForce/ukm:DateTime[$pos]/@Date" />
+					<xsl:variable name="from-text" as="xs:date?" select="clml2akn:parse-date(.)" />
+					<xsl:choose>
+						<xsl:when test="exists($from-text)">
+							<xsl:value-of select="$from-text" />
+						</xsl:when>
+						<xsl:otherwise>
+							<xsl:variable name="pos" as="xs:integer" select="count(../preceding-sibling::ComingIntoForceClauses) + 1" />
+							<xsl:value-of select="/Legislation/ukm:Metadata/ukm:*/ukm:ComingIntoForce/ukm:DateTime[$pos]/@Date" />
+						</xsl:otherwise>
+					</xsl:choose>
 				</xsl:when>
 			</xsl:choose>
 		</xsl:attribute>
