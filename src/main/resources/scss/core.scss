@@ -1,0 +1,113 @@
+
+body {
+	margin: 1cm 1in
+}
+
+$indent: 2.5em;
+
+section {
+	position: relative;
+	margin-top: 2em
+}
+
+
+// lists
+
+$list-indent: 2em;
+
+ol, ul {
+	position: relative;
+	margin-left: $list-indent;
+	padding-left: 0;
+	list-style-type: none
+}
+li {
+	margin-left: $list-indent
+}
+li > .num {
+	display: inline-block;
+	position: absolute;
+	left: 0
+}
+li > ol, li > ul {
+	margin-left: 0
+}
+
+
+/* tables */
+
+table {
+	width: 100%;
+	margin: 1em 0 0 0;
+	border-collapse: collapse;
+	font-size: smaller
+}
+th, td {
+	padding: 6pt
+}
+th {
+	font-weight: normal
+}
+td {
+	vertical-align: top
+}
+th > *:first-child, td > *:first-child {
+	margin-top: 0
+}
+th > *:last-child, td > *:last-child {
+	margin-bottom: 0
+}
+
+
+// block quotes
+
+*[data-startQuote]:before { content: attr(data-startQuote) }
+
+
+/* images */
+
+img {
+// 	max-width: 50%
+}
+
+
+// inline
+
+.uppercase { text-transform: uppercase }
+
+.noteRef { vertical-align: super }
+.noteRef.footnote { font-size: x-small }
+
+a { color: #2790C4 }
+a[href=''], a[href^='#'] {
+	color: inherit;
+	text-decoration: none;
+	&:hover {
+		text-decoration: underline
+    }
+}
+
+
+
+// footnotes
+
+.footnotes {
+	margin-top: 2em;
+	border-top: thin solid black
+}
+.note.footnote {
+	position: relative
+}
+.note.footnote > .marker {
+	display: block;
+	position: absolute;
+	left: 0em;
+	font-size: x-small;
+	&:after {
+		content: '.'
+	}
+}
+.note.footnote > .marker + p {
+	text-indent: 3ch
+}
+

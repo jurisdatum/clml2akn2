@@ -1,17 +1,16 @@
 <?xml version="1.0" encoding="utf-8"?>
 
-<!-- v1.5, written by Jim Mangiafico, updated __ 2019 -->
+<!-- v1.4, written by Jim Mangiafico, updated __ May 2018 -->
 
 <xsl:stylesheet version="2.0"
-	xpath-default-namespace="http://docs.oasis-open.org/legaldocml/ns/akn/3.0"
+	xpath-default-namespace="http://docs.oasis-open.org/legaldocml/ns/akn/3.0/WD17"
 	xmlns:xsl="http://www.w3.org/1999/XSL/Transform"
 	xmlns:xs="http://www.w3.org/2001/XMLSchema"
 	xmlns:math="http://www.w3.org/1998/Math/MathML"
 	xmlns:akn="http://docs.oasis-open.org/legaldocml/ns/akn/3.0/CSD13"
 	xmlns:ukl="http://www.legislation.gov.uk/namespaces/legislation"
 	xmlns:ukm="http://www.legislation.gov.uk/namespaces/metadata"
-	xmlns:local="http://jurisdatum.com/tna/akn2html"
-	exclude-result-prefixes="xs math akn ukl ukm local">
+	exclude-result-prefixes="xs math akn ukl ukm">
 
 <xsl:param name="css-path" select="'/'" />
 <xsl:param name="show-annotations" select="true()" />
@@ -23,10 +22,9 @@
 
 <xsl:key name="id" match="*" use="@eId" />
 <xsl:key name="note" match="note" use="@eId" />
-<xsl:key name="note-ref" match="noteRef" use="substring(@href, 2)" />
 <xsl:key name="extent" match="restriction" use="if (ends-with(@href, ']')) then substring-before(substring(@href,2), '[') else substring(@href,2)" />
 
-<xsl:variable name="doc-category" as="xs:string" select="/akomaNtoso/*/meta/proprietary/ukm:*/ukm:DocumentClassification/ukm:DocumentCategory/@Value" />
+<xsl:variable name="primary" as="xs:boolean" select="/akomaNtoso/*/meta/proprietary/ukm:*/ukm:DocumentClassification/ukm:DocumentCategory/@Value = 'primary'" />
 <xsl:variable name="doc-type" as="xs:string" select="/akomaNtoso/*/meta/proprietary/ukm:*/ukm:DocumentClassification/ukm:DocumentMainType/@Value" />
 
 <xsl:template name="attrs">
@@ -57,31 +55,6 @@
 	</xsl:choose>
 </xsl:template>
 
-<xsl:function name="local:is-big-level" as="xs:boolean">
-	<xsl:param name="e" as="element()" />
-	<xsl:choose>
-		<xsl:when test="$doc-category = 'euretained'">
-			<xsl:value-of select="local-name($e) = ('title', 'part', 'chapter', 'section', 'subsection') or $e/self::hcontainer/@name = 'schedule'" />
-		</xsl:when>
-		<xsl:otherwise>
-			<xsl:value-of select="$e[self::group] or $e[self::part] or $e[self::chapter] or $e[self::hcontainer][@name='crossheading'] or
-				$e[self::hcontainer][@name='P1group'] or $e[self::hcontainer][@name='schedule']" />
-		</xsl:otherwise>
-	</xsl:choose>
-</xsl:function>
-<xsl:function name="local:is-p1" as="xs:boolean">
-	<xsl:param name="e" as="element()" />
-	<xsl:choose>
-		<xsl:when test="$doc-category = 'euretained'">
-			<xsl:value-of select="exists($e[self::article] | $e[self::paragraph][ancestor::hcontainer[@name='schedule']][not(ancestor::paragraph)])" />
-		</xsl:when>
-		<xsl:otherwise>
-			<xsl:value-of select="exists($e[self::section] | $e[self::article] | $e[self::hcontainer][@name='regulation'] |
-				$e[self::rule] | $e[self::paragraph][ancestor::hcontainer[@name='schedule']][not(ancestor::paragraph)])" />
-		</xsl:otherwise>
-	</xsl:choose>
-</xsl:function>
-
 <xsl:template match="/akomaNtoso">
 	<html>
 		<head>
@@ -100,14 +73,11 @@
 				<xsl:when test="$doc-type = 'NorthernIrelandAct'">
 					<link rel="stylesheet" href="{$css-path}nia.css" type="text/css" />
 				</xsl:when>
-				<xsl:when test="$doc-category = 'secondary'">
-					<link rel="stylesheet" href="{$css-path}secondary.css" type="text/css" />
-				</xsl:when>
-				<xsl:when test="$doc-category = 'euretained'">
-					<link rel="stylesheet" href="{$css-path}euretained.css" type="text/css" />
+				<xsl:when test="$primary">
+					<link rel="stylesheet" href="{$css-path}primary.css" type="text/css" />
 				</xsl:when>
 				<xsl:otherwise>
-					<link rel="stylesheet" href="{$css-path}primary.css" type="text/css" />
+					<link rel="stylesheet" href="{$css-path}secondary.css" type="text/css" />
 				</xsl:otherwise>
 			</xsl:choose>
 			<xsl:if test="$show-annotations">
@@ -225,7 +195,7 @@
 
 <xsl:template match="note">
 	<xsl:param name="marker" />
-	<div>
+	<div class="note">
 		<xsl:call-template name="attrs" />
 		<xsl:if test="$marker != ''">
 			<span class="marker"><xsl:value-of select="$marker"/></span>
@@ -257,7 +227,7 @@
 <xsl:template name="display-notes">
 	<xsl:param name="note-refs" as="element()*" />
 	<xsl:param name="heading" as="xs:string" />
-	<xsl:if test="exists($note-refs)">
+	<xsl:if test="count($note-refs) > 0">
 		<div class="{tokenize($note-refs[1]/@class, ' ')[last()]}">
 			<div><xsl:value-of select="$heading" /></div>
 			<xsl:for-each select="$note-refs">
@@ -268,21 +238,22 @@
 </xsl:template>
 
 <xsl:template name="annotations">
-	<xsl:param name="root" as="element()+" select="." />
+	<xsl:param name="root" as="element()*" select="." />
 	<xsl:param name="wrapper-element-name" select="'footer'" as="xs:string" />
-<!-- 	<xsl:variable name="annotation-root-id" as="xs:string" select="if ($root[1]/@eId) then $root[1]/@eId else local-name($root[1]) " /> -->
 	<xsl:variable name="all-own-note-refs" as="element()*">
 		<xsl:choose>
 			<xsl:when test="$root[self::coverPage] or $root[self::preface] or $root[self::preamble]">
 				<xsl:sequence select="$root//noteRef" />
 			</xsl:when>
-			<!-- when larger than section, only those not belonging to a descendant -->
-			<xsl:when test="local:is-big-level($root)">
-				<xsl:sequence select="$root/num//noteRef | $root/heading//noteRef | $root/subheading//noteRef |
-					$root/intro//noteRef | $root/content//noteRef | $root/wrapUp//noteRef" />
+			<!-- when larger than section, only those not belonging to a decendant -->
+			<xsl:when test="$root[self::part] or $root[self::chapter] or $root[self::hcontainer][@name='crossheading'] |
+				$root[self::hcontainer][@name='P1group'] | $root[self::hcontainer][@name='schedules'] | $root[self::hcontainer][@name='schedule']">
+				<xsl:sequence select="$root/num/noteRef | $root/heading/noteRef | $root/subheading/noteRef |
+					$root/intro/noteRef | $root/content/noteRef | $root/wrapUp/noteRef" />
 			</xsl:when>
 			<!-- when a section, everything -->
-			<xsl:when test="local:is-p1($root)">
+			<xsl:when test="$root[self::section] | $root[self::article] | $root[self::hcontainer][@name='regulation'] |
+				$root[self::rule] | $root[self::paragraph][ancestor::hcontainer[@name='schedule']][not(ancestor::paragraph)]">
 				<xsl:sequence select="$root//noteRef" />
 			</xsl:when>
 			<!-- when below a section, nothing -->
@@ -335,21 +306,11 @@
 </xsl:template>
 
 <xsl:template name="footnotes">
-	<xsl:variable name="notes" as="element()*" select="/akomaNtoso/*/meta/notes/note[@class='footnote']" />
-	<xsl:if test="exists($notes)">
+	<xsl:variable name="note-refs" select="//noteRef[@class='footnote']" />
+	<xsl:if test="count($note-refs) > 0">
 		<footer class="footnotes">
-			<xsl:for-each select="$notes">
-				<xsl:variable name="id" as="xs:string" select="@eId" />
-				<xsl:variable name="note-ref" as="element()?" select="key('note-ref', $id)[1]" />
-				<xsl:if test="empty($note-ref)">
-					<xsl:message>
-						<xsl:text>can't find ref for footnote </xsl:text>
-						<xsl:value-of select="$id" />
-					</xsl:message>
-				</xsl:if>
-				<xsl:for-each select="$note-ref">
-					<xsl:call-template name="display-note" />
-				</xsl:for-each>
+			<xsl:for-each select="$note-refs">
+				<xsl:call-template name="display-note" />
 			</xsl:for-each>
 		</footer>
 	</xsl:if>
@@ -362,7 +323,7 @@
 		<xsl:call-template name="attrs" />
 		<xsl:apply-templates />
 	</div>
-	<xsl:if test="$doc-category = 'primary'"><xsl:call-template name="annotations" /></xsl:if>
+	<xsl:if test="$primary"><xsl:call-template name="annotations" /></xsl:if>
 </xsl:template>
 
 <xsl:template match="preface">
@@ -402,42 +363,19 @@
 	</div>
 </xsl:template>
 
-<xsl:template match="attachment">
-	<xsl:apply-templates />
-</xsl:template>
-
-<xsl:template match="doc">
-	<article>
-		<xsl:apply-templates select="@name" />
-		<xsl:variable name="category" as="xs:string?" select="meta/proprietary/ukm:*/ukm:DocumentClassification/ukm:DocumentCategory/@Value" />
-		<xsl:if test="exists($category)">
-			<xsl:attribute name="class">
-				<xsl:value-of select="$category" />
-			</xsl:attribute>
-		</xsl:if>
-		<xsl:apply-templates />
-	</article>
-</xsl:template>
 
 <!-- hierarchy -->
 
 <!-- pure containers: part, chapter, crossheading -->
 
-<xsl:template match="hcontainer[@name='group'] | title | part | chapter | hcontainer[@name='crossheading'] | hcontainer[@name='P1group'] |
-		hcontainer[@name='schedules'] | hcontainer[@name='schedule'] | level">
+<xsl:template match="part | chapter | hcontainer[@name='crossheading'] | hcontainer[@name='P1group'] |
+		hcontainer[@name='schedules'] | hcontainer[@name='schedule']">
 	<section>
 		<xsl:call-template name="attrs" />
-		<xsl:if test="exists(num | heading | subheading)">
-			<h2>
-				<xsl:if test="exists(num) and empty(heading | subheading)">
-					<xsl:attribute name="class">
-						<xsl:text>noheading</xsl:text>
-					</xsl:attribute>
-				</xsl:if>
-				<xsl:call-template name="extent" />
-				<xsl:apply-templates select="num | heading | subheading" />
-			</h2>
-		</xsl:if>
+		<h2>
+			<xsl:call-template name="extent" />
+			<xsl:apply-templates select="num | heading | subheading" />			
+		</h2>
 		<xsl:apply-templates select="num//authorialNote | heading//authorialNote | subheading//authorialNote" />
 		<xsl:call-template name="annotations">
 			<xsl:with-param name="wrapper-element-name" select="'header'" />
@@ -451,7 +389,7 @@
 
 <xsl:template match="section | article | hcontainer[@name='regulation'] | rule | hcontainer[@name='schedule']//paragraph[not(ancestor::paragraph)]">
 	<xsl:variable name="invert" as="xs:boolean" select="
-		(($doc-category = 'secondary') and not(contains(ancestor::quotedStructure[1]/@class, 'primary'))) or
+		(not($primary) and not(contains(ancestor::quotedStructure[1]/@class, 'primary'))) or
 		contains(ancestor::quotedStructure[1]/@class, 'secondary') or
 		ancestor::act[1]/@name = 'NorthernIrelandAct'
 	" />
@@ -491,7 +429,7 @@
 </xsl:template>
 
 
-<xsl:template match="paragraph | subparagraph | clause | subclause | point">
+<xsl:template match="paragraph | subparagraph | clause | subclause">
 	<div>
 		<xsl:call-template name="attrs" />
 		<xsl:variable name="h-num">
@@ -500,7 +438,6 @@
 				<xsl:when test="self::subparagraph">h4</xsl:when>
 				<xsl:when test="self::clause">h5</xsl:when>
 				<xsl:when test="self::subclause">h6</xsl:when>
-				<xsl:when test="self::point">h6</xsl:when>
 			</xsl:choose>
 		</xsl:variable>
 		<xsl:element name="{$h-num}">
@@ -526,13 +463,6 @@
 		<xsl:apply-templates />
 	</div>
 </xsl:template>
-
-
-<!-- wrappers -->
-<xsl:template match="hcontainer[@name='wrapper'][every $child in * satisfies $child/self::content]">
-	<xsl:apply-templates select="content/node()" />
-</xsl:template>
-
 
 
 <!-- LISTS (ordered, unordered, and key) -->
@@ -583,10 +513,10 @@
 
 <xsl:template match="blockList[@class='key']">
 	<dl>
-		<xsl:if test="@ukl:separator = '='">
+		<xsl:if test="@ukl:Separator = '='">
 			<xsl:attribute name="class">equals</xsl:attribute>
 		</xsl:if>
-		<xsl:apply-templates select="@*[name()!='class'][local-name()!='separator']" />
+		<xsl:apply-templates select="@*[name()!='class'][name()!='ukl:Separator']" />
 		<xsl:apply-templates />
 	</dl>
 </xsl:template>
@@ -599,16 +529,14 @@
 	<dt><xsl:apply-templates select="@*|node()" /></dt>
 </xsl:template>
 
-<xsl:template match="blockList[@class='key']/item/*[not(self::heading)]" priority="1"><!-- could be another blockList -->
-	<dd>
-		<xsl:next-match />
-	</dd>
+<xsl:template match="blockList[@class='key']/item/p">
+	<dd><xsl:apply-templates select="@*|node()" /></dd>
 </xsl:template>
 
 
 <!-- blocks -->
 
-<xsl:template match="p[docTitle] | p[shortTitle] | p[mod[quotedStructure]] | p[embeddedStructure] | p[subFlow] | p[authorialNote]">
+<xsl:template match="p[docTitle] | p[shortTitle] | p[mod[quotedStructure]] | p[subFlow] | p[authorialNote]">
 	<div>
 		<xsl:call-template name="attrs" />
 		<xsl:if test="mod/quotedStructure/*[1][self::p][@class='run-on']">
@@ -623,7 +551,7 @@
 <xsl:template match="p">
 	<p>
 		<xsl:apply-templates select="@*" />
-		<xsl:if test="following-sibling::*[1][@class='BlockAmendment'][child::mod/quotedStructure/*[1][@class='run-on']]">
+		<xsl:if test="following-sibling::*[1][@class='BlockAmendment'][mod/quotedStructure/*[1][@class='run-on']]">
 			<xsl:attribute name="style">
 				<xsl:value-of select="string-join((@style, 'display:inline;'), ' ')" />
 			</xsl:attribute>
@@ -663,17 +591,13 @@
 	</div>
 </xsl:template>
 
-<xsl:template match="subFlow[@name='wrapper']">
-	<xsl:apply-templates />
-</xsl:template>
-
 <xsl:template name="blockquote-children">
 	<xsl:param name="contents" as="node()*" />
 	<xsl:param name="start-quote" select="''" as="xs:string" tunnel="yes" />
 	<xsl:param name="first-text-node-id" select="''" as="xs:string" tunnel="yes" />
 	<xsl:param name="end-quote" select="''" as="xs:string" tunnel="yes" />
-	<xsl:param name="end-quote-anchor-id" select="()" as="xs:string?" tunnel="yes" />
-	<xsl:param name="append-text" select="()" as="element()?" tunnel="yes" />
+	<xsl:param name="last-text-node-id" select="''" as="xs:string" tunnel="yes" />
+	<xsl:param name="append-text" select="/.." as="element()?" tunnel="yes" />
 	<xsl:for-each select="$contents">
 		<xsl:copy>
 			<xsl:copy-of select="@*"/>
@@ -684,7 +608,7 @@
 				<xsl:with-param name="contents" select="node()" />
 			</xsl:call-template>
 		</xsl:copy>
-		<xsl:if test="exists(end-quote-anchor-id) and (generate-id(.) = $end-quote-anchor-id)">
+		<xsl:if test="$last-text-node-id and (generate-id() = $last-text-node-id)">
 			<xsl:if test="$end-quote">
 				<span class="endQuote"><xsl:value-of select="$end-quote" /></span>
 			</xsl:if>
@@ -695,8 +619,8 @@
 	</xsl:for-each>
 </xsl:template>
 
-<xsl:template match="quotedStructure | embeddedStructure">
-	<blockquote class="{ local-name() }">
+<xsl:template match="quotedStructure">
+	<blockquote>
 		<xsl:apply-templates select="@*[not(name()='startQuote')][not(name()='endQuote')]" />
 		<xsl:if test="*[1][@class='run-on']">
 			<xsl:attribute name="style">
@@ -706,26 +630,17 @@
 		<xsl:variable name="contents">
 			<xsl:apply-templates />
 		</xsl:variable>
-		<xsl:variable name="text-nodes" as="text()*" select="$contents//text()[normalize-space()]" />
-		<xsl:variable name="end-quote-anchor-id" as="xs:string?">
-			<xsl:variable name="last-text-node" as="text()?" select="$text-nodes[last()]" />
-			<xsl:if test="exists($last-text-node)">
-				<xsl:choose>
-					<xsl:when test="empty($last-text-node/ancestor::math:math)">
-						<xsl:value-of select="generate-id($last-text-node)" />
-					</xsl:when>
-					<xsl:otherwise>
-						<xsl:value-of select="generate-id($last-text-node/ancestor::math:math[1])" />
-					</xsl:otherwise>
-				</xsl:choose>
-			</xsl:if>
+		<xsl:variable name="text-nodes" as="text()*">
+			<xsl:for-each select="$contents//text()[normalize-space()]">
+				<xsl:sequence select="." />
+			</xsl:for-each>
 		</xsl:variable>
 		<xsl:call-template name="blockquote-children">
 			<xsl:with-param name="contents" select="$contents" />
 			<xsl:with-param name="start-quote" select="string(@startQuote)" tunnel="yes" />
 			<xsl:with-param name="first-text-node-id" select="generate-id($text-nodes[1])" tunnel="yes" />
 			<xsl:with-param name="end-quote" select="string(@endQuote)" tunnel="yes" />
-			<xsl:with-param name="end-quote-anchor-id" select="$end-quote-anchor-id" tunnel="yes" />
+			<xsl:with-param name="last-text-node-id" select="generate-id($text-nodes[last()])" tunnel="yes" />			
 			<xsl:with-param name="append-text" select="following-sibling::*[1][@name='AppendText']" tunnel="yes" />
 		</xsl:call-template>
 	</blockquote>
@@ -811,11 +726,10 @@
 <!-- foreign -->
 
 <xsl:template match="foreign">
-	<xsl:apply-templates />
-<!-- 	<div>
+	<div>
 		<xsl:call-template name="attrs" />
 		<xsl:apply-templates />
-	</div> -->
+	</div>
 </xsl:template>
 
 <xsl:template match="foreign//*[namespace-uri() != 'http://www.w3.org/1998/Math/MathML'][namespace-uri() != namespace-uri-for-prefix('',.)]">
@@ -832,18 +746,9 @@
 		<xsl:choose>
 			<xsl:when test="@altimg and not(math:semantics)">
 				<semantics>
-					<xsl:choose>
-						<xsl:when test="every $child in * satisfies $child/self::math:mrow">
-							<xsl:apply-templates />
-						</xsl:when>
-						<xsl:otherwise>
-							<mrow>
-								<xsl:apply-templates />
-							</mrow>
-						</xsl:otherwise>
-					</xsl:choose>
+					<xsl:apply-templates />
 					<annotation-xml encoding="MathML-Presentation">
-						<mtext><img src="{ @altimg }" alt="math" /></mtext>
+						<mtext><img src="{@altimg}" /></mtext>
 					</annotation-xml>
 				</semantics>
 			</xsl:when>
@@ -860,7 +765,7 @@
 		<xsl:apply-templates />
 		<xsl:if test="../@altimg">
 			<annotation-xml encoding="MathML-Presentation">
-				<mtext><img src="{../@altimg}" alt="math" /></mtext>
+				<mtext><img src="{../@altimg}" /></mtext>
 			</annotation-xml>
 		</xsl:if>
 	</xsl:element>
@@ -887,13 +792,6 @@
 <xsl:template match="inline">
 	<span>
 		<xsl:call-template name="attrs" />
-		<xsl:apply-templates />
-	</span>
-</xsl:template>
-
-<xsl:template match="inline[@name='uppercase']">
-	<span class="uppercase">
-		<xsl:apply-templates select="@*" />
 		<xsl:apply-templates />
 	</span>
 </xsl:template>
@@ -929,7 +827,7 @@
 	<cite>
 		<xsl:apply-templates select="@*[not(name()='href')]" />
 		<xsl:choose>
-			<xsl:when test=".//ref or parent::a">
+			<xsl:when test=".//ref">
 				<xsl:attribute name="data-href"><xsl:value-of select="@href" /></xsl:attribute>
 				<xsl:apply-templates />
 			</xsl:when>

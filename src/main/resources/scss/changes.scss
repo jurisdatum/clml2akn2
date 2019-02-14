@@ -1,0 +1,49 @@
+
+
+ins, del { text-decoration: none }
+
+ins.first, del.first {
+// 	display: inline-block;
+// 	position: relative
+}
+
+
+a.noteRef.commentary {
+// 	display: block;
+// 	position: absolute;
+// 	top: 0;
+// 	left: -$indent
+}
+
+
+.annotations {
+	margin: 1em;
+	border: thin solid grey;
+	padding: 1em;
+	display: none
+}
+
+.annotations > div + div {
+	margin-top: 1em
+}
+
+.annotations > div:first-child {
+	font-weight: bold
+}
+
+.annotations > div > div {
+	margin-top: 1em
+}
+.annotations > div > div:first-child {
+	border-top: thin dotted gray;
+	padding-top: 1em;
+	font-weight: bold
+}
+
+.annotations > div > div > span.marker {
+	display: block;
+	position: absolute
+}
+.annotations > div > div > span.marker + * {
+	text-indent: 2em
+}

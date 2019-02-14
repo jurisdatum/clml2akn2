@@ -1,0 +1,130 @@
+
+@import 'core.scss';
+@import 'changes.scss';
+
+
+body {
+	font-family: "Times New Roman", Times, serif
+}
+
+.longTitle {
+	margin: 1em 2em 0 2em
+}
+
+.longTitle > p {
+	margin: 0.5em 0 0 0;
+	text-align: center;
+	font-weight: bold
+}
+
+.preamble {
+	margin-top: 2em;
+	.tblock { margin-top: 1em }
+	.tblock > .num { display: inline-block; position: absolute }
+	.tblock > :not(.num) { display: block; margin-left: $indent }
+
+}
+
+h2, h3, h4, h5, h6 {
+	margin: 0;
+	font-size: medium;
+	font-weight: normal
+}
+
+%center-common {
+	display: block;
+	text-align: center
+}
+%center-num {
+	@extend %center-common;
+	margin-top: 2em;
+}
+%center-heading {
+	@extend %center-common;
+	margin-top: 1em;
+}
+
+.title > h2 > .num { @extend %center-num }
+.title > h2 > .heading { @extend %center-heading }
+
+.chapter > h2 > .num { @extend %center-num }
+.chapter > h2 > .heading { @extend %center-heading }
+
+.section > h2 > .num { @extend %center-num; letter-spacing: 2px }
+.section > h2 > .heading { @extend %center-heading; letter-spacing: 2px }
+
+.article > h2 > .num { @extend %center-num; font-style: italic }
+.article > h2 > .heading { @extend %center-heading; font-weight: bold }
+
+.paragraph {
+	position: relative
+}
+.paragraph > * > span.num {
+	display: inline-block;
+	position: absolute;
+	left: 0
+}
+.paragraph > * > span.num > ins.first::before {
+	position: absolute;
+	left: -1ch
+// 	vertical-align: top
+}
+.paragraph > .content > p:first-child {
+	text-indent: $indent
+}
+
+.level > h2 > .num { display: inline-block; width: $indent }
+.level > h2 > .heading { }
+
+.level > h2.noheading > .num {
+	position: absolute;
+	left: 0
+}
+.level > h2.noheading + div > *:first-child {
+	text-indent: $indent
+}
+
+*[data-name='schedules'] > h2 > .heading { @extend %center-heading; }
+
+*[data-name='schedule'] > h2 > .num { @extend %center-num; }
+*[data-name='schedule'] > h2 > .heading { @extend %center-heading; }
+
+
+/* lists */
+
+ul > li:before {
+	content: '—';
+	position: absolute;
+	left: 0
+}
+
+
+/* tables */
+
+th, td {
+	border-top: thin solid black;
+	border-bottom: thin solid black;
+	border-right: thin solid black
+}
+th:last-child, td:last-child {
+	border-right: none
+}
+
+
+
+// signatures
+
+.signees {
+	display: flex;
+	justify-content: flex-end
+}
+.signee {
+	padding-left: 1em;
+	padding-right: 6em;
+	p {
+		text-align: center
+	}
+}
+
+
+
