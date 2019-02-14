@@ -995,8 +995,14 @@
 	<xsl:attribute name="datetime"><xsl:value-of select="." /></xsl:attribute>
 </xsl:template>
 
-<xsl:template match="@class | @title | @style | @href | @src | @alt | @width | @height | @colspan | @rowspan">
+<xsl:template match="@class | @title | @style | @src | @alt | @width | @height | @colspan | @rowspan">
 	<xsl:copy />
+</xsl:template>
+
+<xsl:template match="@href">
+	<xsl:attribute name="href">
+		<xsl:value-of select="replace(., ' ', '%20')" />
+	</xsl:attribute>
 </xsl:template>
 
 <xsl:template match="@xml:lang">
