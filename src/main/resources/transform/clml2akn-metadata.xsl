@@ -184,10 +184,10 @@
 								<xsl:choose>
 									<xsl:when test="ukm:SecondaryMetadata/ukm:AlternativeNumber[@Category='C']">
 										<xsl:variable name="c-num" select="ukm:SecondaryMetadata/ukm:AlternativeNumber[@Category='C']/@Value" />
-										<xsl:value-of select="concat('S.R. &amp; O. ', $year, '/', $num, ' (C. ', $c-num, ')')" />
+										<xsl:value-of select="concat('S.R. &amp; O. (N.I.) ', $year, '/', $num, ' (C. ', $c-num, ')')" />
 									</xsl:when>
 									<xsl:otherwise>
-										<xsl:value-of select="concat('S.R. &amp; O. ', $year, '/', $num)" />
+										<xsl:value-of select="concat('S.R. &amp; O. (N.I.) ', $year, '/', $num)" />
 									</xsl:otherwise>
 								</xsl:choose>
 							</xsl:when>
@@ -527,12 +527,13 @@
 				<TLCOrganization eId="ref-{clml2akn:id(.)}" href="/ontology/organization/uk.{replace(.,' ’','')}" showAs="{.}" />			
 			</xsl:for-each>
 
-			<xsl:for-each-group select="//@RestrictExtent" group-by=".">
+			<xsl:for-each-group select="//@RestrictExtent" group-by="translate(., '.', '')">
 				<TLCLocation eId="{lower-case(replace(.,'\.',''))}">
 					<xsl:variable name="extent" select="replace(.,'E','England')" />
 					<xsl:variable name="extent" select="replace($extent, 'W', 'Wales')" />
 					<xsl:variable name="extent" select="replace($extent, 'S', 'Scotland')" />
 					<xsl:variable name="extent" select="replace($extent, 'N.I.', 'Northern Ireland')" />
+					<xsl:variable name="extent" select="replace($extent, 'NI', 'Northern Ireland')" />
 					<xsl:attribute name="href">
 						<xsl:text>/ontology/jurisdictions/uk.</xsl:text>
 						<xsl:value-of select="translate($extent, '\+ ', '')" />
