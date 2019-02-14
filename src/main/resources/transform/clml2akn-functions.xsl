@@ -107,5 +107,17 @@
 	<xsl:value-of select="replace($url, '(_en_\d{3})$', concat('_', $version, '$1'))" />
 </xsl:function>
 
+<xsl:function name="clml2akn:parse-date" as="xs:date?">
+	<xsl:param name="text" as="xs:string" />
+	<xsl:analyze-string regex="^(\d{{1,2}})(st|nd|th)? (January|February|March|April|May|June|July|August|September|October|November|December) (\d{{4}})$" select="normalize-space($text)">
+		<xsl:matching-substring>
+			<xsl:variable name="day" as="xs:string" select="format-number(number(regex-group(1)), '00')" />
+			<xsl:variable name="months" as="xs:string*" select="('January','February','March','April','May','June','July','August','September','October','November','December')" />
+			<xsl:variable name="month" as="xs:string" select="format-number(index-of($months, regex-group(3)), '00')" />
+			<xsl:variable name="year" as="xs:string" select="regex-group(4)" />
+			<xsl:value-of select="concat($year, '-', $month, '-', $day)" />
+		</xsl:matching-substring>
+	</xsl:analyze-string>
+</xsl:function>
 
 </xsl:transform>

@@ -1658,7 +1658,7 @@ helper template is called from the mapping templates for <num>, <heading> and <s
 	<location refersTo="#{lower-case(translate(.,' ,',''))}"><xsl:apply-templates /></location>
 </xsl:template>
 <xsl:template match="DateSigned">
-	<date date="{@Date}"><xsl:apply-templates /></date>
+	<date date="{ if (@Date) then @Date else clml2akn:parse-date(.) }"><xsl:apply-templates /></date>
 </xsl:template>
 
 <xsl:template match="LSseal">
