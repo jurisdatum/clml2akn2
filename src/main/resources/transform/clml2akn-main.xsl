@@ -1773,9 +1773,29 @@ helper template is called from the mapping templates for <num>, <heading> and <s
 
 
 <xsl:template match="@CommentaryRef">
-	<xsl:variable name="type" select="key('id', .)/@Type" />
-	<!-- 'attribute' is added to the class for testing purposes only -->
-	<noteRef href="#{.}" marker="{$type}{clml2akn:commentary-num($type, .)}" class="commentary attribute {$type}" />
+	<xsl:variable name="commentary" as="element()?" select="key('id', .)" />
+	<xsl:if test="empty($commentary)">
+		<xsl:message>
+			<xsl:text>commentary does not exist </xsl:text>
+			<xsl:value-of select="." />
+		</xsl:message>
+	</xsl:if>
+	<xsl:variable name="type" as="xs:string?" select="$commentary/@Type" />
+	<noteRef href="#{.}">
+		<xsl:if test="exists($type)">
+			<xsl:attribute name="marker">
+				<xsl:value-of select="$type" />
+				<xsl:value-of select="clml2akn:commentary-num($type, .)" />
+			</xsl:attribute>
+		</xsl:if>
+		<xsl:attribute name="class">
+			<xsl:text>commentary attribute</xsl:text><!-- 'attribute' is added to the class for testing purposes only -->
+			<xsl:if test="exists($type)">
+				<xsl:text> </xsl:text>
+				<xsl:value-of select="$type" />
+			</xsl:if>
+		</xsl:attribute>
+	</noteRef>
 </xsl:template>
 
 <xsl:template match="Body/CommentaryRef">
