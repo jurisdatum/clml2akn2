@@ -270,7 +270,7 @@
 <xsl:template name="annotations">
 	<xsl:param name="root" as="element()+" select="." />
 	<xsl:param name="wrapper-element-name" select="'footer'" as="xs:string" />
-<!-- 	<xsl:variable name="annotation-root-id" as="xs:string" select="if ($root[1]/@eId) then $root[1]/@eId else local-name($root[1]) " /> -->
+	<xsl:variable name="annotation-root-id" as="xs:string" select="if ($root[1]/@eId) then $root[1]/@eId else local-name($root[1])" />
 	<xsl:variable name="all-own-note-refs" as="element()*">
 		<xsl:choose>
 			<xsl:when test="$root[self::coverPage] or $root[self::preface] or $root[self::preamble]">
@@ -298,38 +298,44 @@
 			<xsl:call-template name="display-notes">
 				<xsl:with-param name="note-refs" select="$own-note-refs[ends-with(@class,'I')]" />
 				<xsl:with-param name="heading" select="'Commencement Information'" />
+				<xsl:with-param name="annotation-root-id" select="$annotation-root-id" tunnel="yes" />
 			</xsl:call-template>
 
 			<xsl:call-template name="display-notes">
 				<xsl:with-param name="note-refs" select="$own-note-refs[ends-with(@class,'X')]" />
 				<xsl:with-param name="heading" select="'Editorial Information'" />
+				<xsl:with-param name="annotation-root-id" select="$annotation-root-id" tunnel="yes" />
 			</xsl:call-template>
 
 			<xsl:call-template name="display-notes">
 				<xsl:with-param name="note-refs" select="$own-note-refs[ends-with(@class,'E')]" />
 				<xsl:with-param name="heading" select="'Extent Information'" />
+				<xsl:with-param name="annotation-root-id" select="$annotation-root-id" tunnel="yes" />
 			</xsl:call-template>
 
 			<xsl:call-template name="display-notes">
 				<xsl:with-param name="note-refs" select="$own-note-refs[ends-with(@class,'F')]" />
 				<xsl:with-param name="heading" select="'Amendments (Textual)'" />
+				<xsl:with-param name="annotation-root-id" select="$annotation-root-id" tunnel="yes" />
 			</xsl:call-template>
 
 			<xsl:call-template name="display-notes">
 				<xsl:with-param name="note-refs" select="$own-note-refs[ends-with(@class,'C')]" />
 				<xsl:with-param name="heading" select="'Modifications etc. (not altering text)'" />
+				<xsl:with-param name="annotation-root-id" select="$annotation-root-id" tunnel="yes" />
 			</xsl:call-template>
 
 			<xsl:call-template name="display-notes">
 				<xsl:with-param name="note-refs" select="$own-note-refs[ends-with(@class,'M')]" />
 				<xsl:with-param name="heading" select="'Marginal Citations'" />
+				<xsl:with-param name="annotation-root-id" select="$annotation-root-id" tunnel="yes" />
 			</xsl:call-template>
 
 			<xsl:call-template name="display-notes">
 				<xsl:with-param name="note-refs" select="$own-note-refs[ends-with(@class,'P')]" />
 				<xsl:with-param name="heading" select="'Subordinate Legislation Made'" />
+				<xsl:with-param name="annotation-root-id" select="$annotation-root-id" tunnel="yes" />
 			</xsl:call-template>
-
 		</xsl:element>
 	</xsl:if>
 </xsl:template>
@@ -439,9 +445,11 @@
 			</h2>
 		</xsl:if>
 		<xsl:apply-templates select="num//authorialNote | heading//authorialNote | subheading//authorialNote" />
-		<xsl:call-template name="annotations">
-			<xsl:with-param name="wrapper-element-name" select="'header'" />
-		</xsl:call-template>
+		<xsl:if test="empty(ancestor::quotedStructure)">
+			<xsl:call-template name="annotations">
+				<xsl:with-param name="wrapper-element-name" select="'header'" />
+			</xsl:call-template>
+		</xsl:if>
 		<xsl:apply-templates select="*[not(self::num)][not(self::heading)][not(self::subheading)]" />
 	</section>
 </xsl:template>
@@ -472,7 +480,9 @@
 		<xsl:apply-templates select="num//authorialNote | heading//authorialNote | subheading//authorialNote" />
 		<xsl:apply-templates select="*[not(self::num)][not(self::heading)][not(self::subheading)]" />
 	</section>
-	<xsl:call-template name="annotations" />
+	<xsl:if test="empty(ancestor::quotedStructure)">
+		<xsl:call-template name="annotations" />
+	</xsl:if>
 </xsl:template>
 
 
@@ -988,7 +998,14 @@
 <!-- attributes -->
 
 <xsl:template match="@eId">
-	<xsl:attribute name="id"><xsl:value-of select="." /></xsl:attribute>
+<!-- 	<xsl:param name="annotation-root-id" as="xs:string?" tunnel="yes" select="()" /> -->
+	<xsl:attribute name="id">
+<!-- 		<xsl:if test="exists($annotation-root-id)">
+			<xsl:value-of select="$annotation-root-id" />
+			<xsl:text>-</xsl:text>
+		</xsl:if> -->
+		<xsl:value-of select="." />
+	</xsl:attribute>
 </xsl:template>
 
 <xsl:template match="@date">
