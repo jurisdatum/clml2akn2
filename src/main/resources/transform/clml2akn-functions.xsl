@@ -14,6 +14,9 @@
 		<xsl:when test="$name = ('Group', 'Part', 'Chapter', 'Pblock', 'PsubBlock')">
 			<xsl:value-of select="true()" />
 		</xsl:when>
+		<xsl:when test="$name = ('P')">
+			<xsl:value-of select="some $child in $e/* satisfies clml2akn:is-hcontainer($child)" />
+		</xsl:when>
 		<xsl:when test="$name = ('P1', 'P1group', 'P2', 'P2group', 'P3', 'P4', 'P5', 'P6')">
 			<xsl:value-of select="true()" />
 		</xsl:when>
