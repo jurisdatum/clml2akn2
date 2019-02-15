@@ -1532,12 +1532,14 @@ helper template is called from the mapping templates for <num>, <heading> and <s
 	<xsl:element name="{local-name()}" namespace="http://www.w3.org/1998/Math/MathML">
 		<xsl:copy-of select="@*"/>
 		<xsl:if test="../@AltVersionRefs">
-			<xsl:attribute name="altimg">
-				<xsl:variable name="version" select="key('id', ../@AltVersionRefs)" />
-				<xsl:variable name="res-id" select="$version/Figure/Image/@ResourceRef | $version/Image/@ResourceRef" />
-				<xsl:variable name="url" select="key('id', $res-id)/ExternalVersion/@URI" />
-				<xsl:value-of select="clml2akn:add-version-to-image-url($url, $expr-version)" />
-			</xsl:attribute>
+			<xsl:variable name="version" select="key('id', ../@AltVersionRefs)" />
+			<xsl:variable name="res-id" select="$version/Figure/Image/@ResourceRef | $version/Image/@ResourceRef" />
+			<xsl:variable name="url" select="key('id', $res-id)/ExternalVersion/@URI" />
+			<xsl:if test="exists($url)">
+				<xsl:attribute name="altimg">
+					<xsl:value-of select="clml2akn:add-version-to-image-url($url, $expr-version)" />
+				</xsl:attribute>
+			</xsl:if>
 		</xsl:if>
 		<xsl:apply-templates />
 	</xsl:element>
