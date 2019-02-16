@@ -606,14 +606,14 @@ follows the element immediately with any alternative version(s)
 		<xsl:apply-templates select="$subtitle" />
 
 		<xsl:variable name="paras-with-subs" select="$paras[Part | Chapter | Pblock |
-			PsubBlock | P1 | P1group | P2 | P2group | P3 | P4 | P5 | P6]" />
+			PsubBlock | P1 | P1group | P2 | P2group | P3 | P3group | P4 | P5 | P6]" />
 		
 		<xsl:variable name="subs" select="Part | Chapter | Pblock | PsubBlock |
-			P1 | P1group | P2 | P2group | P3 | P4 | P5 | P6 |
+			P1 | P1group | P2 | P2group | P3 | P3group | P4 | P5 | P6 |
 			EUPart | EUTitle | EUChapter | EUSection | EUSubsection | Division |
 			$paras/Part | $paras/Chapter | $paras/Pblock | $paras/PsubBlock |
 			$paras/P1 | $paras/P1group | $paras/P2 | $paras/P2group |
-			$paras/P3 | $paras/P4 | $paras/P5 | $paras/P6" />
+			$paras/P3 | $paras/P3group | $paras/P4 | $paras/P5 | $paras/P6" />
 			
 		<xsl:variable name="headers" as="element()*" select="$number union $title union $subtitle" />
 			
@@ -680,16 +680,16 @@ These require only a straightforward application of the hierarchy template. The 
 </xsl:template>
 
 
-<!-- groups of numbered provisions: P1group and P2group
+<!-- groups of numbered provisions: P1group, P2group and P3group
 
 Usually these elements have only one child, and they serve only to provide a title for a child that cannot
 have its own title. In such cases, this template merely passes control to the template corresponding to the
 child, along with a refernce to the Title element and some attributes (extent, period, etc). If there is more
 than one child, this template is merely a hcontainer wrapper with a heading.
 -->
-<xsl:template match="P1group[P1] | P2group[P2]">
+<xsl:template match="P1group[P1] | P2group[P2] | P3group[P3]">
 
-	<xsl:variable name="children" select="P1 | P2 | P | P2para" />	<!-- P2para added for ukpga/1978/5 -->
+	<xsl:variable name="children" select="P1 | P2 | P3 | P | P2para | P3para" />	<!-- P2para added for ukpga/1978/5 -->
 	<xsl:choose>
 		<xsl:when test="count($children) = 1">
 
@@ -854,7 +854,7 @@ http://www.opsi.gov.uk/si/si-practice.doc
 <!-- When a P1group has a P as a child, or when a P2group has a P2para as a direct child (e.g., ukpga/2005/4),
 they always require a new level in the hierarchy.
 -->
-<xsl:template match="P1group[P][not(P1)] | P2group[P2para][not(P2)]">
+<xsl:template match="P1group[P][not(P1)] | P2group[P2para][not(P2)] | P3group[P3para][not(P3)]">
 	<xsl:call-template name="hierarchy">
 		<xsl:with-param name="name" select="clml2akn:provision-name(., substring(local-name(), 1, 2))" />
 	</xsl:call-template>
@@ -973,7 +973,7 @@ hierarchical container.
 			<xsl:for-each select="* except $exclude">
 				<xsl:choose>
 					<xsl:when test="self::Part | self::Chapter | self::Pblock | self::PsubBlock |
-						self::P1 | self::P1group | self::P2 | self::P2group | self::P3 | self::P4 | self::P5 | self::P6">
+						self::P1 | self::P1group | self::P2 | self::P2group | self::P3 | self::P3group | self::P4 | self::P5 | self::P6">
 						<xsl:apply-templates select="." />
 					</xsl:when>
 					<xsl:otherwise>
