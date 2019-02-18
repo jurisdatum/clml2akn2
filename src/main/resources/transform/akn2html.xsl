@@ -1031,7 +1031,7 @@
 </xsl:template>
 
 <xsl:template match="text()">
-	<xsl:value-of select="translate(., '&#132;&#149;&#150;', '')" />
+	<xsl:value-of select="translate(., '&#128;&#132;&#149;&#150;&#153;', '')" />
 </xsl:template>
 
 </xsl:stylesheet>
