@@ -126,8 +126,12 @@
 <xsl:function name="clml2akn:id" as="xs:string">
 	<xsl:param name="e" as="element()" />
 	<xsl:choose>
-		<xsl:when test="$e/@id"><xsl:value-of select="$e/@id" /></xsl:when>
-		<xsl:otherwise><xsl:value-of select="generate-id($e)" /></xsl:otherwise>
+		<xsl:when test="$e/@id">
+			<xsl:value-of select="$e/@id" />
+		</xsl:when>
+		<xsl:otherwise>
+			<xsl:value-of select="generate-id($e)" />
+		</xsl:otherwise>
 	</xsl:choose>
 </xsl:function>
 
