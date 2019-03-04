@@ -1809,7 +1809,7 @@ helper template is called from the mapping templates for <num>, <heading> and <s
 <xsl:template match="CommentaryRef">
 	<xsl:if test="not(following-sibling::node()[1][self::Text])">
 		<noteRef href="#{@Ref}">
-			<xsl:variable name="commentary" as="element()?" select="key('id', @Ref)" />
+			<xsl:variable name="commentary" as="element()?" select="key('id', @Ref)[1]" />
 			<xsl:if test="exists($commentary)">
 				<xsl:attribute name="marker">
 					<xsl:value-of select="$commentary/@Type" />
