@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 
-<!-- v1.5, written by Jim Mangiafico, updated _______ -->
+<!-- v2.0, written by Jim Mangiafico -->
 
 <xsl:transform version="2.0"
 	xmlns="http://docs.oasis-open.org/legaldocml/ns/akn/3.0"
