@@ -428,10 +428,12 @@
 	<p class="{local-name()}"><xsl:apply-templates /></p>
 </xsl:template>
 <xsl:template match="DateOfEnactment/DateText">
-	<docDate>
-		<xsl:attribute name="date" select="/Legislation/ukm:Metadata/ukm:*/ukm:EnactmentDate/@Date" />
-		<xsl:apply-templates />
-	</docDate>
+	<xsl:if test="exists(child::node())">
+		<docDate>
+			<xsl:attribute name="date" select="/Legislation/ukm:Metadata/ukm:*/ukm:EnactmentDate/@Date" />
+			<xsl:apply-templates />
+		</docDate>
+	</xsl:if>
 </xsl:template>
 
 <xsl:template match="Approved">

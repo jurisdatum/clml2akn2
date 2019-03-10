@@ -28,21 +28,30 @@
 
 <xsl:variable name="work-date">
 	<xsl:choose>
-		<xsl:when test="exists(/ukl:Legislation/ukm:Metadata/ukm:PrimaryMetadata/ukm:EnactmentDate)">
-			<xsl:value-of select="/ukl:Legislation/ukm:Metadata/ukm:PrimaryMetadata/ukm:EnactmentDate/@Date" />
+		<xsl:when test="exists(/ukl:Legislation/ukm:Metadata/ukm:PrimaryMetadata)">
+			<xsl:choose>
+				<xsl:when test="exists(/ukl:Legislation/ukm:Metadata/ukm:PrimaryMetadata/ukm:EnactmentDate)">
+					<xsl:value-of select="/ukl:Legislation/ukm:Metadata/ukm:PrimaryMetadata/ukm:EnactmentDate/@Date" />
+				</xsl:when>
+				<xsl:when test="exists(/ukl:Legislation/ukm:Metadata/ukm:PrimaryMetadata/ukm:Year)">
+					<xsl:variable name="year" as="xs:string" select="/ukl:Legislation/ukm:Metadata/ukm:PrimaryMetadata/ukm:Year/@Value" />
+					<xsl:value-of select="concat($year, '-01-01')" />
+				</xsl:when>
+			</xsl:choose>
 		</xsl:when>
 		<xsl:when test="exists(/ukl:Legislation/ukm:Metadata/ukm:SecondaryMetadata)">
 			<xsl:choose>
 				<xsl:when test="exists(/ukl:Legislation/ukm:Metadata/ukm:SecondaryMetadata/ukm:Made)">
 					<xsl:value-of select="/ukl:Legislation/ukm:Metadata/ukm:SecondaryMetadata/ukm:Made/@Date" />
 				</xsl:when>
-				<xsl:when test="exists(/ukl:Legislation/ukl:Secondary/ukl:SecondaryPrelims/ukl:MadeDate/ukl:DateText)">
+				<xsl:when test="exists(/ukl:Legislation/ukl:Secondary/ukl:SecondaryPrelims/ukl:MadeDate/ukl:DateText/node())">
 					<xsl:value-of select="clml2akn:parse-date(/ukl:Legislation/ukl:Secondary/ukl:SecondaryPrelims/ukl:MadeDate/ukl:DateText)" />
 				</xsl:when>
+				<xsl:when test="exists(/ukl:Legislation/ukm:Metadata/ukm:SecondaryMetadata/ukm:Year)">
+					<xsl:variable name="year" as="xs:string" select="/ukl:Legislation/ukm:Metadata/ukm:SecondaryMetadata/ukm:Year/@Value" />
+					<xsl:value-of select="concat($year, '-01-01')" />
+				</xsl:when>
 			</xsl:choose>
-		</xsl:when>
-		<xsl:when test="exists(/ukl:Legislation/ukm:Metadata/ukm:SecondaryMetadata/ukm:Made)">
-			<xsl:value-of select="/ukl:Legislation/ukm:Metadata/ukm:SecondaryMetadata/ukm:Made/@Date" />
 		</xsl:when>
 		<xsl:when test="exists(/ukl:Legislation/ukm:Metadata/ukm:EUMetadata/ukm:EnactmentDate)">
 			<xsl:value-of select="/ukl:Legislation/ukm:Metadata/ukm:EUMetadata/ukm:EnactmentDate/@Date" />
