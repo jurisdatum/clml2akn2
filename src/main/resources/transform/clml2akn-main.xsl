@@ -1571,7 +1571,7 @@ helper template is called from the mapping templates for <num>, <heading> and <s
 <xsl:template match="Schedule | Appendix">
 	<hcontainer name="{lower-case(local-name())}" eId="{clml2akn:id(.)}">
 		<xsl:call-template name="period" />
-		<xsl:apply-templates select="*[not(self::Reference)][not(self::CommentaryRef)]" />
+		<xsl:apply-templates select="*[not(self::Reference)][not(self::CommentaryRef)][not(self::Contents)]" />
 	</hcontainer>
 	<xsl:call-template name="alt-versions" />
 </xsl:template>
@@ -1584,7 +1584,7 @@ helper template is called from the mapping templates for <num>, <heading> and <s
 	<xsl:choose>
 		<xsl:when test="$has-appendix and $wrap">
 			<hcontainer name="body">
-				<xsl:apply-templates select="*[not(self::CommentaryRef)]">
+				<xsl:apply-templates select="preceding-sibling::Contents | *[not(self::CommentaryRef)]">
 					<xsl:with-param name="wrap" select="true()" />
 				</xsl:apply-templates>
 			</hcontainer>
@@ -1592,20 +1592,20 @@ helper template is called from the mapping templates for <num>, <heading> and <s
 		<xsl:when test="$has-appendix">
 			<hcontainer name="body">
 				<content>
-					<xsl:apply-templates select="*[not(self::CommentaryRef)]">
+					<xsl:apply-templates select="preceding-sibling::Contents | *[not(self::CommentaryRef)]">
 						<xsl:with-param name="wrap" select="false()" />
 					</xsl:apply-templates>
 				</content>
 			</hcontainer>
 		</xsl:when>
 		<xsl:when test="$wrap">
-			<xsl:apply-templates select="*[not(self::CommentaryRef)]">
+			<xsl:apply-templates select="preceding-sibling::Contents | *[not(self::CommentaryRef)]">
 				<xsl:with-param name="wrap" select="true()" />
 			</xsl:apply-templates>
 		</xsl:when>
 		<xsl:otherwise>
 			<content>
-				<xsl:apply-templates select="*[not(self::CommentaryRef)]">
+				<xsl:apply-templates select="preceding-sibling::Contents | *[not(self::CommentaryRef)]">
 					<xsl:with-param name="wrap" select="false()" />
 				</xsl:apply-templates>
 			</content>
@@ -1629,6 +1629,19 @@ helper template is called from the mapping templates for <num>, <heading> and <s
 	</xsl:choose>
 </xsl:template>
 
+<xsl:template match="Schedule/Contents | Appendix/Contents">
+	<xsl:param name="wrap" as="xs:boolean" select="false()" />
+	<xsl:choose>
+		<xsl:when test="$wrap">
+			<intro>
+				<xsl:next-match />
+			</intro>
+		</xsl:when>
+		<xsl:otherwise>
+			<xsl:next-match />
+		</xsl:otherwise>
+	</xsl:choose>
+</xsl:template>
 
 
 <!-- conclusions -->
