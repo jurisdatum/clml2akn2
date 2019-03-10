@@ -634,7 +634,7 @@
 		
 		<!-- notes -->
 		<!-- see templates for Commentaries, MarginNotes & Footnotes -->
-		<xsl:if test="/Legislation/Commentaries | /Legislation/MarginNotes | /Legislation/Footnotes">
+		<xsl:if test="/Legislation/Commentaries/Commentary | /Legislation/MarginNotes/MarginNote | /Legislation/Footnotes/Footnote">
 			<notes source="#source">
 				<xsl:apply-templates select="/Legislation/Commentaries/Commentary | /Legislation/MarginNotes/MarginNote | /Legislation/Footnotes/Footnote" />
 			</notes>
