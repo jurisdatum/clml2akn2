@@ -158,7 +158,7 @@
 	<xsl:choose>
 		<xsl:when test="$e/@id"><xsl:value-of select="$e/@id" /></xsl:when>
 		<xsl:otherwise>
-			<xsl:value-of select="concat('term-', lower-case(translate(replace($e, ' ', '-'), '&#34;“”%', '')))" />
+			<xsl:value-of select="concat('term-', lower-case(translate(replace($e, ' ', '-'), '&#xA;&#34;“”%', '')))" />
 		</xsl:otherwise>
 	</xsl:choose>
 </xsl:function>
