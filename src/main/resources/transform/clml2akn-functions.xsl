@@ -108,8 +108,15 @@
 
 <xsl:function name="clml2akn:add-version-to-image-url" as="xs:string">
 	<xsl:param name="url" as="xs:string" />
-	<xsl:param name="version" as="xs:string" />
-	<xsl:value-of select="replace($url, '(_en_\d{3})$', concat('_', $version, '$1'))" />
+	<xsl:param name="version" as="xs:string?" />
+	<xsl:choose>
+		<xsl:when test="exists($version)">
+			<xsl:value-of select="replace($url, '(_en_\d{3})$', concat('_', $version, '$1'))" />
+		</xsl:when>
+		<xsl:otherwise>
+			<xsl:value-of select="$url" />
+		</xsl:otherwise>
+	</xsl:choose>
 </xsl:function>
 
 <xsl:function name="clml2akn:parse-date" as="xs:date?">

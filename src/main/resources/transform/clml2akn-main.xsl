@@ -87,13 +87,16 @@
 	</xsl:analyze-string>		
 </xsl:variable>
 
-<xsl:variable name="expr-version" as="xs:string">
+<xsl:variable name="expr-version" as="xs:string?">
 	<xsl:choose>
 		<xsl:when test="$doc-status = 'revised'">
 			<xsl:value-of select="/Legislation/ukm:Metadata/dct:valid" />
 		</xsl:when>
 		<xsl:when test="$doc-category = 'primary'">
 			<xsl:text>enacted</xsl:text>
+		</xsl:when>
+		<xsl:when test="$ukm-doctype = ('UnitedKingdomChurchInstrument', 'UnitedKingdomMinisterialOrder')">
+			<xsl:text>created</xsl:text>
 		</xsl:when>
 		<xsl:when test="$doc-category = 'secondary'">
 			<xsl:text>made</xsl:text>
@@ -734,7 +737,7 @@ than one child, this template is merely a hcontainer wrapper with a heading.
 set forth in the Office of Public Sector Information's "Statutory Instrument Practice" manual, available at
 http://www.opsi.gov.uk/si/si-practice.doc
 -->
-<xsl:function name="clml2akn:provision-name" as="xs:string">
+<xsl:function name="clml2akn:provision-name" as="xs:string?">
 
 	<xsl:param name="context" as="element()" />
 	<xsl:param name="name" as="xs:string" />
@@ -765,7 +768,6 @@ http://www.opsi.gov.uk/si/si-practice.doc
 		</xsl:choose>
 	</xsl:variable>
 
-	<xsl:value-of>
 		<xsl:choose>
 			<xsl:when test="$type = 'act'">
 				<xsl:choose>
@@ -779,7 +781,7 @@ http://www.opsi.gov.uk/si/si-practice.doc
 			</xsl:when>
 			<xsl:when test="$type = 'bill'">
 				<xsl:choose>
-					<!-- unless Scotish -->
+					<!-- unless Scottish -->
 					<xsl:when test="$name = 'P1'">clause</xsl:when>
 					<xsl:when test="$name = 'P2'">subsection</xsl:when>
 					<xsl:when test="$name = 'P3'">paragraph</xsl:when>
@@ -842,10 +844,9 @@ http://www.opsi.gov.uk/si/si-practice.doc
 				</xsl:choose>
 			</xsl:otherwise>
 		</xsl:choose>
-	</xsl:value-of>
 </xsl:function>
 
-<xsl:function name="clml2akn:provision-name" as="xs:string">
+<xsl:function name="clml2akn:provision-name" as="xs:string?">
 	<xsl:param name="e" as="element()" />
 	<xsl:choose>
 		<xsl:when test="exists($e/ancestor::EURetained)">
@@ -861,8 +862,10 @@ http://www.opsi.gov.uk/si/si-practice.doc
 they always require a new level in the hierarchy.
 -->
 <xsl:template match="P1group[P][not(P1)] | P2group[P2para][not(P2)] | P3group[P3para][not(P3)]">
+	<xsl:variable name="name" as="xs:string?" select="clml2akn:provision-name(., substring(local-name(), 1, 2))" />
 	<xsl:call-template name="hierarchy">
-		<xsl:with-param name="name" select="clml2akn:provision-name(., substring(local-name(), 1, 2))" />
+		<xsl:with-param name="name" select="if (exists($name)) then $name else 'hcontainer'" />
+		<xsl:with-param name="hcontainer-name" select="if (empty($name)) then 'unknonwn' else ''" />
 	</xsl:call-template>
 </xsl:template>
 
@@ -887,9 +890,9 @@ wrapping needed to include a full hierarchical element seems unnecessarily clums
 	<xsl:param name="attrs" select="()" as="attribute()*" />
 	<xsl:param name="title" select="Title" as="element()?" />
 
-	<xsl:variable name="name" select="clml2akn:provision-name(.)" />
+	<xsl:variable name="name" as="xs:string?" select="clml2akn:provision-name(.)" />
 	<xsl:call-template name="hierarchy">
-		<xsl:with-param name="name" select="$name" />
+		<xsl:with-param name="name" select="if (exists($name)) then $name else 'hcontainer'" />
 		<!-- this is out of place -->
 		<xsl:with-param name="hcontainer-name">
 			<xsl:text>regulation</xsl:text>

@@ -141,11 +141,12 @@
 	</xsl:choose>
 </xsl:template>
 
-<xsl:function name="clml2akn:eu-provision-name" as="xs:string">
+<xsl:function name="clml2akn:eu-provision-name" as="xs:string?">
 	<xsl:param name="e" as="element()" />
 	<xsl:choose>
 		<xsl:when test="$e/self::P1">article</xsl:when>
 		<xsl:when test="$e/self::P2">paragraph</xsl:when>
+		<xsl:when test="$e/self::P3">subparagraph</xsl:when>
 	</xsl:choose>
 </xsl:function>
 
