@@ -1877,7 +1877,20 @@ helper template is called from the mapping templates for <num>, <heading> and <s
 <!-- citations -->
 
 <xsl:template match="Citation">
-	<ref href="{@URI}"><xsl:apply-templates /></ref>
+	<xsl:choose>
+		<xsl:when test="node()[last()][self::FootnoteRef]"><!-- uksi/1999/1750/made -->
+			<xsl:variable name="fnRef" as="element()" select="node()[last()]" />
+			<ref href="{ @URI }">
+				<xsl:apply-templates select="node() except $fnRef" />
+			</ref>
+			<xsl:apply-templates select="$fnRef" />
+		</xsl:when>
+		<xsl:otherwise>
+			<ref href="{ @URI }">
+				<xsl:apply-templates />
+			</ref>
+		</xsl:otherwise>
+	</xsl:choose>
 </xsl:template>
 
 <xsl:template match="CitationSubRef">
