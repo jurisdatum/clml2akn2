@@ -207,14 +207,16 @@
 				<xsl:attribute name="typeof"><xsl:value-of select="name()" /></xsl:attribute>
 				<xsl:variable name="prefix" select="prefix-from-QName(resolve-QName(name(), .))" as="xs:string?" />
 				<xsl:for-each select="@*">
-					<meta property="{name()}" content="{.}">
+					<meta>
 						<xsl:attribute name="property">
 							<xsl:if test="$prefix">
 								<xsl:value-of select="$prefix" /><xsl:text>:</xsl:text>
 							</xsl:if>
 							<xsl:value-of select="name()" />
 						</xsl:attribute>
-						<xsl:attribute name="content"><xsl:value-of select="." /></xsl:attribute>
+						<xsl:attribute name="content">
+							<xsl:value-of select="translate(., '&#128;&#132;&#149;&#150;&#153;&#157;', '')" />
+						</xsl:attribute>
 					</meta>
 				</xsl:for-each>
 				<xsl:apply-templates select="*" />
@@ -1031,7 +1033,7 @@
 </xsl:template>
 
 <xsl:template match="text()">
-	<xsl:value-of select="translate(., '&#128;&#132;&#149;&#150;&#153;', '')" />
+	<xsl:value-of select="translate(., '&#128;&#132;&#149;&#150;&#153;&#157;', '')" />
 </xsl:template>
 
 </xsl:stylesheet>
