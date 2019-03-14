@@ -1029,6 +1029,7 @@ helper template is called from the mapping templates for <num>, <heading> and <s
 				<xsl:value-of select="@PuncAfter" />
 			</xsl:attribute>
 		</xsl:if> -->
+		<xsl:apply-templates select="self::Pnumber/preceding-sibling::node()[1][self::CommentaryRef]" />
 		<xsl:apply-templates />
 		<xsl:call-template name="reference" />
 	</num>
@@ -1822,7 +1823,7 @@ helper template is called from the mapping templates for <num>, <heading> and <s
 </xsl:template>
 
 <xsl:template match="CommentaryRef">
-	<xsl:if test="not(following-sibling::node()[1][self::Text])">
+	<xsl:if test="not(following-sibling::node()[1][self::Text or self::Pnumber])">
 		<noteRef href="#{@Ref}">
 			<xsl:variable name="commentary" as="element()?" select="key('id', @Ref)[1]" />
 			<xsl:if test="exists($commentary)">
