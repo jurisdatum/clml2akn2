@@ -15,6 +15,7 @@ import net.sf.saxon.s9api.QName;
 import net.sf.saxon.s9api.SaxonApiException;
 import net.sf.saxon.s9api.Serializer;
 import net.sf.saxon.s9api.XdmAtomicValue;
+import net.sf.saxon.s9api.XdmNode;
 import net.sf.saxon.s9api.XsltCompiler;
 import net.sf.saxon.s9api.XsltExecutable;
 import net.sf.saxon.s9api.XsltTransformer;
@@ -54,12 +55,12 @@ public class Akn2Html {
 //	    return html.getXdmNode();
 //	}
 	
-	public void transform(Akn akn, String cssPath, OutputStream out) {
+	public void transform(XdmNode akn, String cssPath, OutputStream out) {
 		XsltTransformer transform = stylesheet.load();
 		if (cssPath != null)
 			transform.setParameter(new QName("css-path"), new XdmAtomicValue(cssPath));
 		try {
-			transform.setSource(akn.root.asSource());
+			transform.setSource(akn.asSource());
 		} catch (SaxonApiException e) {
 			throw new RuntimeException(e);
 		}
@@ -71,11 +72,18 @@ public class Akn2Html {
 			throw new RuntimeException(e);
 		}
 	}
+
+	public void transform(Akn akn, String cssPath, OutputStream out) {
+		transform(akn.root, cssPath, out);
+	}
 	
-	public String transform(Akn akn, String cssPath) throws IOException {
+	public String transform(XdmNode akn, String cssPath) throws IOException {
 		ByteArrayOutputStream baos = new ByteArrayOutputStream();
 		transform(akn, cssPath, baos);
 		return baos.toString("UTF-8");
+	}
+	public String transform(Akn akn, String cssPath) throws IOException {
+		return transform(akn.root, cssPath);
 	}
 
 }
