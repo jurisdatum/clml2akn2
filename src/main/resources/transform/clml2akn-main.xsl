@@ -629,7 +629,7 @@ follows the element immediately with any alternative version(s)
 		<xsl:choose>
 			<xsl:when test="$subs">
 				<xsl:variable name="intro" select="($subs[1]/preceding-sibling::* union
-					$paras-with-subs[1]/preceding-sibling::*) except $headers" />
+					$paras-with-subs[1]/preceding-sibling::*)[not(self::CommentaryRef and exists($number) and clml2akn:commentary-ref-can-be-skipped(., $number[1]))] except $headers" />
 
 				<xsl:variable name="wrap" select="$subs[last()]/following-sibling::* |
 					$paras-with-subs[last()]/following-sibling::*" />
@@ -1032,7 +1032,7 @@ helper template is called from the mapping templates for <num>, <heading> and <s
 				<xsl:value-of select="@PuncAfter" />
 			</xsl:attribute>
 		</xsl:if> -->
-		<xsl:apply-templates select="self::Pnumber/preceding-sibling::node()[1][self::CommentaryRef]" />
+		<xsl:apply-templates select="clml2akn:get-preceding-skipped-commentary-refs(.)" mode="force" />
 		<xsl:apply-templates />
 		<xsl:call-template name="reference" />
 	</num>
@@ -1825,21 +1825,55 @@ helper template is called from the mapping templates for <num>, <heading> and <s
 	<p><xsl:next-match /></p>
 </xsl:template>
 
+<xsl:function name="clml2akn:node-is-skippable-after-commentary-ref" as="xs:boolean">
+	<xsl:param name="node" as="node()" />
+	<xsl:value-of select="$node/self::text()[not(normalize-space(.))] or $node/self::CommentaryRef" />
+</xsl:function>
+<xsl:function name="clml2akn:nodes-are-skippable-after-commentary-ref" as="xs:boolean">
+	<xsl:param name="nodes" as="node()*" />
+	<xsl:value-of select="every $node in $nodes satisfies clml2akn:node-is-skippable-after-commentary-ref($node)" />
+</xsl:function>
+<xsl:function name="clml2akn:commentary-ref-can-be-skipped" as="xs:boolean">
+	<xsl:param name="commentary-ref" as="element(CommentaryRef)" />
+	<xsl:param name="anchor" as="element()" />
+	<xsl:variable name="in-between" as="node()*" select="$commentary-ref/following-sibling::node() intersect $anchor/preceding-sibling::node()" />
+	<xsl:value-of select="clml2akn:nodes-are-skippable-after-commentary-ref($in-between)" />
+</xsl:function>
+<xsl:function name="clml2akn:get-preceding-skipped-commentary-refs" as="element(CommentaryRef)*">
+	<xsl:param name="anchor" as="element()" />
+	<xsl:sequence select="$anchor/preceding-sibling::CommentaryRef[clml2akn:commentary-ref-can-be-skipped(., $anchor)]" />
+</xsl:function>
+
 <xsl:template match="CommentaryRef">
-	<xsl:if test="not(following-sibling::node()[1][self::Text or self::Pnumber])">
-		<noteRef href="#{@Ref}">
-			<xsl:variable name="commentary" as="element()?" select="key('id', @Ref)[1]" />
-			<xsl:if test="exists($commentary)">
-				<xsl:attribute name="marker">
-					<xsl:value-of select="$commentary/@Type" />
-					<xsl:value-of select="clml2akn:commentary-num($commentary/@Type, @Ref)" />
-				</xsl:attribute>
-			</xsl:if>
-			<xsl:attribute name="class">
-				<xsl:value-of select="string-join(('commentary', $commentary/@Type), ' ')" />
-			</xsl:attribute>
-		</noteRef>
+	<xsl:variable name="handled-elsewhere" as="xs:boolean">
+		<xsl:variable name="next" as="element()?" select="following-sibling::*[self::Number or self::Pnumber or self::Text][1]" />
+		<xsl:choose>
+			<xsl:when test="empty($next)">
+				<xsl:value-of select="false()" />
+			</xsl:when>
+			<xsl:otherwise>
+				<xsl:value-of select="clml2akn:commentary-ref-can-be-skipped(., $next)" />
+			</xsl:otherwise>
+		</xsl:choose>
+	</xsl:variable>
+	<xsl:if test="not($handled-elsewhere)">
+		<xsl:apply-templates select="." mode="force" />
 	</xsl:if>
+</xsl:template>
+
+<xsl:template match="CommentaryRef" mode="force">
+	<noteRef href="#{@Ref}">
+		<xsl:variable name="commentary" as="element()?" select="key('id', @Ref)[1]" />
+		<xsl:if test="exists($commentary)">
+			<xsl:attribute name="marker">
+				<xsl:value-of select="$commentary/@Type" />
+				<xsl:value-of select="clml2akn:commentary-num($commentary/@Type, @Ref)" />
+			</xsl:attribute>
+		</xsl:if>
+		<xsl:attribute name="class">
+			<xsl:value-of select="string-join(('commentary', $commentary/@Type), ' ')" />
+		</xsl:attribute>
+	</noteRef>
 </xsl:template>
 
 <xsl:template match="MarginNoteRef">
@@ -1972,7 +2006,7 @@ helper template is called from the mapping templates for <num>, <heading> and <s
 				</xsl:choose>
 			</xsl:attribute>
 		</xsl:if>
-		<xsl:apply-templates select="preceding-sibling::node()[1][self::CommentaryRef]" />
+		<xsl:apply-templates select="clml2akn:get-preceding-skipped-commentary-refs(.)" mode="force" />
 		<xsl:apply-templates />
 	</p>
 </xsl:template>
