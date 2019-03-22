@@ -1483,8 +1483,7 @@ helper template is called from the mapping templates for <num>, <heading> and <s
 <xsl:template match="Image">
 	<img>
 		<xsl:attribute name="src">
-			<xsl:variable name="url" as="xs:string" select="key('id', @ResourceRef)/ExternalVersion/@URI" />
-			<xsl:value-of select="clml2akn:add-version-to-image-url($url, $expr-version)" />
+			<xsl:value-of select="key('id', @ResourceRef)/ExternalVersion/@URI" />
 		</xsl:attribute>
 		<xsl:if test="ends-with(@Width, 'pt') and substring(@Width, 1, string-length(@Width) - 2) castable as xs:decimal">
 	 		<xsl:attribute name="width">
@@ -1540,7 +1539,7 @@ helper template is called from the mapping templates for <num>, <heading> and <s
 			<xsl:variable name="url" select="key('id', $res-id)/ExternalVersion/@URI" />
 			<xsl:if test="exists($url)">
 				<xsl:attribute name="altimg">
-					<xsl:value-of select="clml2akn:add-version-to-image-url($url, $expr-version)" />
+					<xsl:value-of select="$url" />
 				</xsl:attribute>
 			</xsl:if>
 		</xsl:if>
