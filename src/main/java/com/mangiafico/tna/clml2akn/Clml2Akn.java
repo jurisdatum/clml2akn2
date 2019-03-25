@@ -2,6 +2,7 @@ package com.mangiafico.tna.clml2akn;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.OutputStream;
 
 import javax.xml.transform.Source;
 import javax.xml.transform.TransformerException;
@@ -15,6 +16,7 @@ import com.mangiafico.tna.Clml;
 import net.sf.saxon.Configuration;
 import net.sf.saxon.s9api.Processor;
 import net.sf.saxon.s9api.SaxonApiException;
+import net.sf.saxon.s9api.Serializer;
 import net.sf.saxon.s9api.XdmDestination;
 import net.sf.saxon.s9api.XdmNode;
 import net.sf.saxon.s9api.XsltCompiler;
@@ -48,6 +50,19 @@ public class Clml2Akn implements URIResolver {
 		this(Xml.processor.getUnderlyingConfiguration());
 	}
 	
+	public void transform(XdmNode clml, OutputStream output) {
+		XsltTransformer transform = executable.load();
+		transform.setInitialContextNode(clml);
+		Serializer serializer = executable.getProcessor().newSerializer();
+		serializer.setOutputStream(output);
+		transform.setDestination(serializer);
+		try {
+			transform.transform();
+		} catch (SaxonApiException e) {
+			throw new RuntimeException(e);
+		}
+	}
+
 	public XdmNode transform(XdmNode clml) {
 		XsltTransformer transform = executable.load();
 		transform.setInitialContextNode(clml);
