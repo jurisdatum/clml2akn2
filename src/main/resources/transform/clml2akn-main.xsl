@@ -1979,7 +1979,7 @@ helper template is called from the mapping templates for <num>, <heading> and <s
 </xsl:template>
 
 <xsl:template match="BlockText/text()">
-	<p><xsl:value-of select="." /></p>
+	<p><xsl:next-match /></p>
 </xsl:template>
 
 <xsl:template match="Text">
