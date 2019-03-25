@@ -398,7 +398,10 @@
 										<xsl:when test="self::Substitution">substitution</xsl:when>
 									</xsl:choose>
 								</xsl:attribute>
-								<xsl:attribute name="eId"><xsl:value-of select="@ChangeId" /></xsl:attribute>
+								<xsl:attribute name="eId">
+									<xsl:text>mod-</xsl:text>
+									<xsl:value-of select="@ChangeId" />
+								</xsl:attribute>
 								<source href="#{@CommentaryRef}" />
 								<destination href="#{./ancestor::*[@id][1]/@id}" /><!-- id of first ancestor -->
 							</textualMod>
