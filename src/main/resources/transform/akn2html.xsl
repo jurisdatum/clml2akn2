@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 
-<!-- v2.0, written by Jim Mangiafico -->
+<!-- v2.0.1, written by Jim Mangiafico -->
 
 <xsl:stylesheet version="2.0"
 	xpath-default-namespace="http://docs.oasis-open.org/legaldocml/ns/akn/3.0"
