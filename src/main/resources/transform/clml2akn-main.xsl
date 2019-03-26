@@ -1386,9 +1386,9 @@ helper template is called from the mapping templates for <num>, <heading> and <s
 		<xsl:choose>
 			<xsl:when test="some $child in * satisfies clml2akn:is-hcontainer($child)">
 				<p>
-					<subFlow name="wrapper">
+					<embeddedStructure>
 						<xsl:apply-templates />
-					</subFlow>
+					</embeddedStructure>
 				</p>
 			</xsl:when>
 			<xsl:when test="every $child in * satisfies clml2akn:is-inline($child)">
