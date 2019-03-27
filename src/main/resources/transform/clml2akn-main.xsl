@@ -1575,7 +1575,7 @@ helper template is called from the mapping templates for <num>, <heading> and <s
 <xsl:template match="ScheduleBody | AppendixBody">
 	<xsl:variable name="wrap" select="exists(Part | Chapter | Pblock | PsubBlock | P1 | P1group | P2 | P2group | P3 | P4 | P5 | P6 |
 			P/Part | P/Chapter | P/Pblock | P/PsubBlock | P/P1 | P/P1group | P/P2 | P/P2group | P/P3 | P/P4 | P/P5 | P/P6 |
-			EUPart | EUTitle | EUChapter | EUSection | EUSubsection | Division)" />
+			EUPart | EUTitle | EUChapter | EUSection | EUSubsection | Division | Form[some $ch in * satisfies clml2akn:is-hcontainer($ch)])" />
 	<xsl:variable name="has-appendix" as="xs:boolean" select="exists(following-sibling::Appendix)" />
 	<xsl:choose>
 		<xsl:when test="$has-appendix and $wrap">
@@ -1892,7 +1892,18 @@ helper template is called from the mapping templates for <num>, <heading> and <s
 </xsl:template>
 
 <xsl:template match="Form">
-	<tblock class="form"><xsl:apply-templates /></tblock>
+	<xsl:choose>
+		<xsl:when test="some $child in child::* satisfies clml2akn:is-hcontainer($child)">
+			<hcontainer name="form">
+				<xsl:apply-templates />
+			</hcontainer>
+		</xsl:when>
+		<xsl:otherwise>
+			<tblock class="form">
+				<xsl:apply-templates />
+			</tblock>
+		</xsl:otherwise>
+	</xsl:choose>
 </xsl:template>
 
 <xsl:template match="Correction">
