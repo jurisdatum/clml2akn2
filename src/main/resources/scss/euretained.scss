@@ -44,6 +44,9 @@ h2, h3, h4, h5, h6 {
 	margin-top: 1em;
 }
 
+.part > h2 > .num { @extend %center-num }
+.part > h2 > .heading { @extend %center-heading }
+
 .title > h2 > .num { @extend %center-num }
 .title > h2 > .heading { @extend %center-heading }
 
@@ -52,6 +55,9 @@ h2, h3, h4, h5, h6 {
 
 .section > h2 > .num { @extend %center-num; letter-spacing: 2px }
 .section > h2 > .heading { @extend %center-heading; letter-spacing: 2px }
+
+.subsection > h2 > .num { @extend %center-num }
+.subsection > h2 > .heading { @extend %center-heading }
 
 .article > h2 > .num { @extend %center-num; font-style: italic }
 .article > h2 > .heading { @extend %center-heading; font-weight: bold }
