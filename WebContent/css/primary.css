@@ -16,6 +16,9 @@ article[data-name='UnitedKingdomLocalAct'] > .preface::before {
 article[data-name='ScottishAct'] > .preface::before {
 	content: url('http://www.legislation.gov.uk/images/crests/asp.gif')
 }
+article[data-name='WelshParliamentAct'] > .preface::before {
+	content: url('http://www.legislation.gov.uk/images/crests/asc.gif')
+}
 article[data-name='WelshNationalAssemblyAct'] > .preface::before {
 	content: url('http://www.legislation.gov.uk/images/crests/anaw.gif')
 }
