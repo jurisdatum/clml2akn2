@@ -63,20 +63,47 @@ h2, h3, h4, h5, h6 {
 .article > h2 > .heading { @extend %center-heading; font-weight: bold }
 
 .paragraph {
-	position: relative
+	position: relative;
 }
-.paragraph > * > span.num {
+.paragraph > *:first-child > span.num {
 	display: inline-block;
 	position: absolute;
 	left: 0
 }
-.paragraph > * > span.num > ins.first::before {
+.paragraph > *:first-child > span.num > ins.first::before {
 	position: absolute;
 	left: -1ch
 // 	vertical-align: top
 }
+.paragraph > *:first-child > span.num + span.heading {
+	margin-left: $indent
+}
 .paragraph > .content > p:first-child {
 	text-indent: $indent
+}
+
+*[data-name='P3group'] {
+	margin-top: 1em
+}
+
+.subparagraph {
+	position: relative;
+	margin-top: 1em;
+	margin-left: $indent
+}
+.subparagraph > *:first-child > span.num {
+	display: inline-block;
+	position: absolute;
+	left: 0
+}
+.subparagraph > *:first-child > span.num:before { content: '(' }
+.subparagraph > *:first-child > span.num:after { content: ')' }
+
+.subparagraph > .content > p:first-child {
+	text-indent: $indent
+}
+.subparagraph > *:first-child > span.num + span.heading {
+	margin-left: $indent
 }
 
 .level > h2 > .num { display: inline-block; width: $indent }
