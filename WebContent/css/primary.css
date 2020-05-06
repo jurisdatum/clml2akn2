@@ -8,40 +8,40 @@
 	display: block; text-align: center;
 }
 article[data-name='UnitedKingdomPublicGeneralAct'] > .preface::before {
-	content: url('http://www.legislation.gov.uk/images/crests/ukpga.gif')
+	content: url('/images/crests/ukpga.gif')
 }
 article[data-name='UnitedKingdomLocalAct'] > .preface::before {
-	content: url('http://www.legislation.gov.uk/images/crests/ukla.gif')
+	content: url('/images/crests/ukla.gif')
 }
 article[data-name='ScottishAct'] > .preface::before {
-	content: url('http://www.legislation.gov.uk/images/crests/asp.gif')
+	content: url('/images/crests/asp.gif')
 }
 article[data-name='WelshParliamentAct'] > .preface::before {
-	content: url('http://www.legislation.gov.uk/images/crests/asc.gif')
+	content: url('/images/crests/asc.gif')
 }
 article[data-name='WelshNationalAssemblyAct'] > .preface::before {
-	content: url('http://www.legislation.gov.uk/images/crests/anaw.gif')
+	content: url('/images/crests/anaw.gif')
 }
 article[data-name='WelshAssemblyMeasure'] > .preface::before {
-	content: url('http://www.legislation.gov.uk/images/crests/mwa.gif')
+	content: url('/images/crests/mwa.gif')
 }
 article[data-name='UnitedKingdomChurchMeasure'] > .preface::before {
-	content: url('http://www.legislation.gov.uk/images/crests/ukcm.gif')
+	content: url('/images/crests/ukcm.gif')
 }
 article[data-name='NorthernIrelandAct'] > .preface::before {
 	
 }
 article[data-name='ScottishOldAct'] > .preface::before {
-	content: url('http://www.legislation.gov.uk/images/crests/aosp.gif')
+	content: url('/images/crests/aosp.gif')
 }
 article[data-name='EnglandAct'] > .preface::before {
-	content: url('http://www.legislation.gov.uk/images/crests/aep.gif')
+	content: url('/images/crests/aep.gif')
 }
 article[data-name='IrelandAct'] > .preface::before {
-	content: url('http://www.legislation.gov.uk/images/crests/aip.gif')
+	content: url('/images/crests/aip.gif')
 }
 article[data-name='GreatBritainAct'] > .preface::before {
-	content: url('http://www.legislation.gov.uk/images/crests/apgb.gif')
+	content: url('/images/crests/apgb.gif')
 }
 
 /* preface  */
