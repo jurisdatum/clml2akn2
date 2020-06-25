@@ -6,14 +6,15 @@ import java.io.InputStream;
 import java.io.OutputStream;
 
 import javax.xml.transform.Source;
+import javax.xml.transform.stream.StreamResult;
 import javax.xml.transform.stream.StreamSource;
 
 import com.mangiafico.Xml;
 import com.mangiafico.akn.Akn;
+import com.mangiafico.tna.clml2akn.Helper;
 
 import net.sf.saxon.s9api.QName;
 import net.sf.saxon.s9api.SaxonApiException;
-import net.sf.saxon.s9api.Serializer;
 import net.sf.saxon.s9api.XdmAtomicValue;
 import net.sf.saxon.s9api.XdmNode;
 import net.sf.saxon.s9api.XsltCompiler;
@@ -64,8 +65,9 @@ public class Akn2Html {
 		} catch (SaxonApiException e) {
 			throw new RuntimeException(e);
 		}
-		Serializer html = Xml.processor.newSerializer(out); 
-		transform.setDestination(html);
+//		Serializer html = Xml.processor.newSerializer(out); 
+//		transform.setDestination(html);
+		transform.setDestination(Helper.makeDestination(new StreamResult(out), Helper.html5properties));
 		try {
 			transform.transform();
 		} catch (SaxonApiException e) {

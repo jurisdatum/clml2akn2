@@ -7,6 +7,7 @@ import java.io.OutputStream;
 import javax.xml.transform.Source;
 import javax.xml.transform.TransformerException;
 import javax.xml.transform.URIResolver;
+import javax.xml.transform.stream.StreamResult;
 import javax.xml.transform.stream.StreamSource;
 
 import com.mangiafico.Xml;
@@ -14,9 +15,7 @@ import com.mangiafico.akn.Akn;
 import com.mangiafico.tna.Clml;
 
 import net.sf.saxon.Configuration;
-import net.sf.saxon.s9api.Processor;
 import net.sf.saxon.s9api.SaxonApiException;
-import net.sf.saxon.s9api.Serializer;
 import net.sf.saxon.s9api.XdmDestination;
 import net.sf.saxon.s9api.XdmNode;
 import net.sf.saxon.s9api.XsltCompiler;
@@ -34,7 +33,8 @@ public class Clml2Akn implements URIResolver {
 	}
 	
 	public Clml2Akn(Configuration config) throws IOException {
-		XsltCompiler compiler = new Processor(config).newXsltCompiler();
+//		XsltCompiler compiler = new Processor(config).newXsltCompiler();
+		XsltCompiler compiler = Xml.processor.newXsltCompiler();
 		compiler.setURIResolver(this);
 		InputStream file = Clml2Akn.class.getResourceAsStream(stylesheet);
 		try {
@@ -53,9 +53,10 @@ public class Clml2Akn implements URIResolver {
 	public void transform(XdmNode clml, OutputStream output) {
 		XsltTransformer transform = executable.load();
 		transform.setInitialContextNode(clml);
-		Serializer serializer = executable.getProcessor().newSerializer();
-		serializer.setOutputStream(output);
-		transform.setDestination(serializer);
+//		Serializer serializer = executable.getProcessor().newSerializer();
+//		serializer.setOutputStream(output);
+//		transform.setDestination(serializer);
+		transform.setDestination(Helper.makeDestination(new StreamResult(output), Helper.aknProperties));
 		try {
 			transform.transform();
 		} catch (SaxonApiException e) {
