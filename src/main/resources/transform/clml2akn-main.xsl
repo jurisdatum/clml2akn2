@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 
-<!-- v2.0.2, written by Jim Mangiafico -->
+<!-- v2.0.3, written by Jim Mangiafico -->
 
 <xsl:stylesheet version="2.0"
 	xmlns="http://docs.oasis-open.org/legaldocml/ns/akn/3.0"
@@ -48,7 +48,7 @@
 
 <xsl:variable name="minor-type" select="/Legislation/ukm:Metadata/ukm:SecondaryMetadata/ukm:DocumentClassification/ukm:DocumentMinorType/@Value" />
 
-<xsl:variable name="is-fragment" select="count(/Legislation/ukm:Metadata/atom:link[@rel='up']) > 0" as="xs:boolean" />
+<xsl:variable name="is-fragment" select="exists(/Legislation/ukm:Metadata/atom:link[@rel='up'])" as="xs:boolean" />
 
 <xsl:variable name="expr-this" as="xs:string">
 	<xsl:value-of select="/Legislation/ukm:Metadata/dc:identifier" />
@@ -66,19 +66,21 @@
 </xsl:variable>
 
 <xsl:variable name="doc-uri" as="xs:string">
-	<xsl:variable name="base" as="xs:string">
+	<xsl:variable name="with-id" as="xs:string">
 		<xsl:choose>
-			<xsl:when test="starts-with($expr-uri, 'http://www.legislation.gov.uk/id/')">
-				<xsl:value-of select="$expr-uri" />
+			<xsl:when test="contains($expr-uri, '/id/')">
+				<xsl:sequence select="$expr-uri" />
 			</xsl:when>
 			<xsl:otherwise>
-				<xsl:value-of select="concat('http://www.legislation.gov.uk/id/', substring-after($expr-uri, 'http://www.legislation.gov.uk/'))" />
+				<xsl:sequence select="concat('http://www.legislation.gov.uk/id/', substring-after($expr-uri, 'legislation.gov.uk/'))" />
 			</xsl:otherwise>
 		</xsl:choose>
 	</xsl:variable>
-	<xsl:analyze-string select="$base" regex="(/enacted)? ( /\d{{4}}-\d{{2}}-\d{{2}} | /made | /welsh )$" flags="x">
-		<xsl:non-matching-substring><xsl:value-of select="." /></xsl:non-matching-substring>
-	</xsl:analyze-string>		
+	<xsl:analyze-string select="$with-id" regex="/(enacted|created|made|adopted|\d{{4}}-\d{{2}}-\d{{2}}|prospective|welsh)$" flags="x">
+		<xsl:non-matching-substring>
+			<xsl:sequence select="." />
+		</xsl:non-matching-substring>
+	</xsl:analyze-string>
 </xsl:variable>
 
 <xsl:variable name="point-in-time" as="xs:date?">
@@ -108,18 +110,20 @@
 </xsl:variable>
 
 <xsl:variable name="this-uri" as="xs:string">
-	<xsl:variable name="base" as="xs:string">
+	<xsl:variable name="with-id" as="xs:string">
 		<xsl:choose>
-			<xsl:when test="starts-with($expr-uri, 'http://www.legislation.gov.uk/id/')">
-				<xsl:value-of select="$expr-uri" />
+			<xsl:when test="contains($expr-this, '/id/')">
+				<xsl:sequence select="$expr-this" />
 			</xsl:when>
 			<xsl:otherwise>
-				<xsl:value-of select="concat('http://www.legislation.gov.uk/id/', substring-after($expr-uri, 'http://www.legislation.gov.uk/'))" />
+				<xsl:sequence select="concat('http://www.legislation.gov.uk/id/', substring-after($expr-this, 'legislation.gov.uk/'))" />
 			</xsl:otherwise>
 		</xsl:choose>
 	</xsl:variable>
-	<xsl:analyze-string select="$base" regex="(/enacted)? ( /\d{{4}}-\d{{2}}-\d{{2}} | /made | /welsh )$" flags="x">
-		<xsl:non-matching-substring><xsl:value-of select="." /></xsl:non-matching-substring>
+	<xsl:analyze-string select="$with-id" regex="/(enacted|created|made|adopted|\d{{4}}-\d{{2}}-\d{{2}}|prospective|welsh)$" flags="x">
+		<xsl:non-matching-substring>
+			<xsl:sequence select="." />
+		</xsl:non-matching-substring>
 	</xsl:analyze-string>
 </xsl:variable>
 
