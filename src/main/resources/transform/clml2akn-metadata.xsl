@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 
-<!-- v2.0.3, written by Jim Mangiafico -->
+<!-- v2.0.4, written by Jim Mangiafico -->
 
 <xsl:transform version="2.0"
 	xmlns="http://docs.oasis-open.org/legaldocml/ns/akn/3.0"
@@ -62,6 +62,48 @@
 		</xsl:otherwise>
 	</xsl:choose>
 </xsl:variable>
+
+<!-- dates -->
+
+<xsl:variable name="generation-date" as="xs:date?">
+	<xsl:sequence select="/ukl:Legislation/ukm:Metadata/ukm:PrimaryMetadata/ukm:EnactmentDate/@Date" />
+	<xsl:sequence select="/ukl:Legislation/ukm:Metadata/ukm:SecondaryMetadata/ukm:Made/@Date" />
+	<xsl:sequence select="/ukl:Legislation/ukm:Metadata/ukm:EUMetadata/ukm:EnactmentDate/@Date" />
+</xsl:variable>
+
+<xsl:variable name="revision-dates" as="xs:date*">
+	<xsl:for-each select="/ukl:Legislation/ukm:Metadata/atom:link[@rel='http://purl.org/dc/terms/hasVersion']/@title[. castable as xs:date][not(. = $generation-date)]">
+		<xsl:sort select="." />
+		<xsl:sequence select="." />
+	</xsl:for-each>
+</xsl:variable>
+
+<xsl:variable name="lifecycle-dates" as="xs:date*" select="($generation-date, $revision-dates)" />
+
+<xsl:function name="clml2akn:make-date-id" as="xs:string">
+	<xsl:param name="date" as="xs:date" />
+	<xsl:sequence select="concat('date-', translate(string($date), '-', ''))" />
+</xsl:function>
+
+<xsl:function name="clml2akn:make-time-interval-id" as="xs:string">
+	<xsl:param name="start" as="xs:date?" />
+	<xsl:param name="end" as="xs:date?" />
+	<xsl:choose>
+		<xsl:when test="exists($start) and exists($end)">
+			<xsl:sequence select="concat('from-', translate(string($start), '-', ''), '-to-', translate(string($end), '-', ''))" />
+		</xsl:when>
+		<xsl:when test="exists($start)">
+			<xsl:sequence select="concat('from-', translate(string($start), '-', ''))" />
+		</xsl:when>
+		<xsl:when test="exists($end)">
+			<xsl:sequence select="concat('to-', translate(string($end), '-', ''))" />
+		</xsl:when>
+		<xsl:otherwise>
+			<xsl:sequence select="'time'" />
+		</xsl:otherwise>
+	</xsl:choose>
+</xsl:function>
+
 
 <xsl:template match="ukm:Metadata">
 
@@ -353,35 +395,11 @@
 				
 		<!-- lifecycle -->
 		<lifecycle source="#source">
-			<xsl:if test="ukm:PrimaryMetadata/ukm:EnactmentDate">
-				<eventRef date="{ukm:PrimaryMetadata/ukm:EnactmentDate/@Date}" type="generation" eId="enacted-date" source="#source" />
+			<xsl:if test="exists($generation-date)">
+		        <eventRef eId="{ clml2akn:make-date-id($generation-date) }" date="{ $generation-date }" type="generation" source="#source" />
 			</xsl:if>
-			<xsl:if test="ukm:SecondaryMetadata/ukm:Sifted">
-				<eventRef date="{ukm:SecondaryMetadata/ukm:Sifted/@Date}" eId="sifted-date" source="#source" />
-			</xsl:if>
-			<xsl:if test="ukm:SecondaryMetadata/ukm:Made">
-				<eventRef date="{ukm:SecondaryMetadata/ukm:Made/@Date}" type="generation" eId="made-date" source="#source" />
-			</xsl:if>
-			<xsl:for-each select="ukm:SecondaryMetadata/ukm:Laid">
-				<eventRef date="{@Date}" eId="laid-date-{position()}" source="#source" />
-			</xsl:for-each>
-			<xsl:for-each select="ukm:SecondaryMetadata/ukm:ComingIntoForce/ukm:DateTime">
-				<eventRef date="{@Date}" eId="coming-into-force-date-{position()}" source="#source" />
-			</xsl:for-each>
-			<xsl:if test="ukm:EUMetadata/ukm:EnactmentDate">
-				<eventRef date="{ukm:EUMetadata/ukm:EnactmentDate/@Date}" type="generation" eId="enacted-date" source="#source" />
-			</xsl:if>
-
-			<!-- adds an eventRef element for each date in a dc:hasVersion atom link -->
-			<xsl:for-each select="atom:link[@rel='http://purl.org/dc/terms/hasVersion']">
-				<xsl:if test="@title castable as xs:date">
-			        <eventRef date="{@title}" type="amendment" source="#source" />
-				</xsl:if>
-			</xsl:for-each>
-
-			<!-- adds an eventRef element for each date in a RestrictStartDate or @RestrictEndDate attribute -->
-			<xsl:for-each select="$event-dates">
-		        <eventRef date="{.}" eId="effective-date-{position()}" source="#source" />
+			<xsl:for-each select="$revision-dates">
+		        <eventRef eId="{ clml2akn:make-date-id(.) }" date="{ . }" type="amendment" source="#source" />
 			</xsl:for-each>
 		</lifecycle>
 		
@@ -449,32 +467,87 @@
 		</xsl:if>
 		
 		<!-- temporal data -->
-		<!-- add a timeInterval element for each unique pair of RestrictStartDate and RestrictEndDate attributes -->
-		<xsl:if test="//*[@RestrictStartDate | @RestrictEndDate]">
+		<!-- add a timeInterval element for each unique pair of dates -->
+		<xsl:if test="exists($lifecycle-dates)">
 			<temporalData source="#source">
-				<xsl:for-each-group select="//*[@RestrictStartDate | @RestrictEndDate]" group-by="concat(@RestrictStartDate, '-', @RestrictEndDate)">
-					<xsl:sort select="concat(@RestrictStartDate, '-', @RestrictEndDate)" />
-					<temporalGroup eId="period{position()}">
+				<temporalGroup eId="all-consecutive-intervals">
+					<xsl:for-each select="$lifecycle-dates">
+						<xsl:variable name="start" as="xs:date" select="." />
+						<xsl:variable name="end" as="xs:date?" select="subsequence($lifecycle-dates, position() + 1, 1)" />
+							<timeInterval eId="{ clml2akn:make-time-interval-id($start, $end) }">
+								<xsl:attribute name="start">
+									<xsl:text>#date-</xsl:text>
+									<xsl:value-of select="translate(string($start), '-', '')" />
+								</xsl:attribute>
+								<xsl:if test="exists($end)">
+									<xsl:attribute name="end">
+										<xsl:text>#date-</xsl:text>
+										<xsl:value-of select="translate(string($end), '-', '')" />
+									</xsl:attribute>
+								</xsl:if>
+								<xsl:attribute name="refersTo">
+									<xsl:text>#in-force</xsl:text>
+								</xsl:attribute>
+							</timeInterval>
+					</xsl:for-each>
+				</temporalGroup>
+				<temporalGroup eId="all-possible-intervals">
+					<xsl:for-each select="$lifecycle-dates">
+						<xsl:variable name="start" as="xs:date" select="." />
+						<xsl:variable name="i" as="xs:integer" select="position()" />
+						<xsl:for-each select="$lifecycle-dates[position() gt $i + 1]">
+							<xsl:variable name="end" as="xs:date" select="." />
+							<timeInterval eId="{ clml2akn:make-time-interval-id($start, $end) }">
+								<xsl:attribute name="start">
+									<xsl:text>#date-</xsl:text>
+									<xsl:value-of select="translate(string($start), '-', '')" />
+								</xsl:attribute>
+								<xsl:if test="exists($end)">
+									<xsl:attribute name="end">
+										<xsl:text>#date-</xsl:text>
+										<xsl:value-of select="translate(string($end), '-', '')" />
+									</xsl:attribute>
+								</xsl:if>
+								<xsl:attribute name="refersTo">
+									<xsl:text>#in-force</xsl:text>
+								</xsl:attribute>
+							</timeInterval>
+						</xsl:for-each>
+						<xsl:if test="$i lt last()">
+							<timeInterval eId="{ clml2akn:make-time-interval-id($start, ()) }">
+								<xsl:attribute name="start">
+									<xsl:text>#date-</xsl:text>
+									<xsl:value-of select="translate(string($start), '-', '')" />
+								</xsl:attribute>
+								<xsl:attribute name="refersTo">
+									<xsl:text>#in-force</xsl:text>
+								</xsl:attribute>
+							</timeInterval>
+						</xsl:if>
+					</xsl:for-each>
+				</temporalGroup>
+				<temporalGroup eId="referenced-intervals">
+					<xsl:for-each-group select="//*[@RestrictStartDate | @RestrictEndDate]" group-by="concat(@RestrictStartDate, '-', @RestrictEndDate)">
+						<xsl:sort select="concat(@RestrictStartDate, '-', @RestrictEndDate)" />
 						<timeInterval>
 							<xsl:if test="@RestrictStartDate">
 								<xsl:attribute name="start">
-									<xsl:text>#</xsl:text>
-									<xsl:value-of select="clml2akn:event-id(@RestrictStartDate)" />
+									<xsl:text>#date-</xsl:text>
+									<xsl:value-of select="translate(string(@RestrictStartDate), '-', '')" />
 								</xsl:attribute>
 							</xsl:if>
 							<xsl:if test="@RestrictEndDate">
 								<xsl:attribute name="end">
-									<xsl:text>#</xsl:text>
-									<xsl:value-of select="clml2akn:event-id(@RestrictEndDate)" />
+									<xsl:text>#date-</xsl:text>
+									<xsl:value-of select="translate(string(@RestrictEndDate), '-', '')" />
 								</xsl:attribute>
 							</xsl:if>
-							<xsl:attribute name="refersTo">
-								<xsl:text>#period-concept</xsl:text>
-								<xsl:value-of select="position()" />
+							<xsl:attribute name="refersTo">	<!-- The refers attribute is a reference to a temporal concept belonging to the Akoma Ntoso ontology and specified in the references section -->
+								<xsl:text>#in-force</xsl:text>
 							</xsl:attribute>
 						</timeInterval>
-					</temporalGroup>
-				</xsl:for-each-group>
+					</xsl:for-each-group>
+				</temporalGroup>
 			</temporalData>
 		</xsl:if>
 
@@ -594,7 +667,9 @@
 				<TLCTerm eId="{$id}" href="/ontology/term/uk.{replace($id, 'term-', '')}" showAs="{.}" />
 			</xsl:for-each-group>
 
-			<xsl:for-each-group select="//*[@RestrictStartDate | @RestrictEndDate]" group-by="concat(@RestrictStartDate,@RestrictEndDate)">
+			<TLCConcept eId="in-force" href="/ontology/concept/inForce" showAs="In Force" />
+
+<!-- 			<xsl:for-each-group select="//*[@RestrictStartDate | @RestrictEndDate]" group-by="concat(@RestrictStartDate,@RestrictEndDate)">
 				<xsl:sort select="concat(@RestrictStartDate,@RestrictEndDate)" />
 				<TLCConcept eId="period-concept{position()}">
 					<xsl:attribute name="href">
@@ -625,7 +700,7 @@
 					</xsl:variable>
 					<xsl:attribute name="showAs"><xsl:value-of select="$period-string" /></xsl:attribute>
 				</TLCConcept>
-			</xsl:for-each-group>
+			</xsl:for-each-group> -->
 			<xsl:for-each select="/Legislation/Secondary/SecondaryPrelims/SubjectInformation/Subject/Title |
 				/Legislation/Secondary/SecondaryPrelims/SubjectInformation/Subject/Subtitle">
 				<TLCConcept href="/uk/subject/{lower-case(translate(., ' ,', '-'))}" showAs="{.}" eId="{clml2akn:id(.)}" />

@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 
-<!-- v2.0.3, written by Jim Mangiafico -->
+<!-- v2.0.4, written by Jim Mangiafico -->
 
 <xsl:stylesheet version="2.0"
 	xmlns="http://docs.oasis-open.org/legaldocml/ns/akn/3.0"
@@ -168,6 +168,7 @@
 </xsl:function>
 
 <!-- a sequence of unique time periods, in chronological order -->
+
 <xsl:variable name="periods" as="xs:string *">
 	<xsl:for-each-group select="//*[@RestrictStartDate | @RestrictEndDate]" group-by="concat(@RestrictStartDate, '-', @RestrictEndDate)">
 		<xsl:sort select="concat(@RestrictStartDate, '-', @RestrictEndDate)" />
@@ -176,27 +177,27 @@
 </xsl:variable>
 
 <!-- returns a unique id for each unique pair of dates -->
-<xsl:function name="clml2akn:period-id" as="xs:string?">
+<!-- <xsl:function name="clml2akn:period-id" as="xs:string?">
 	<xsl:param name="start" as="xs:date?" />
 	<xsl:param name="end" as="xs:date?" />
 	<xsl:variable name="position" select="index-of($periods, concat($start, '-', $end))" />
 	<xsl:value-of select="concat('period', string($position))" />
-</xsl:function>
+</xsl:function> -->
 
 <!-- a sequence of unique dates, in chronological order -->
-<xsl:variable name="event-dates" as="xs:date *">
+<!-- <xsl:variable name="event-dates" as="xs:date *">
 	<xsl:for-each-group select="//@RestrictStartDate | //@RestrictEndDate" group-by=".">
 		<xsl:sort />
 		<xsl:value-of select="." />
 	</xsl:for-each-group>
-</xsl:variable>
+</xsl:variable> -->
 
 <!-- returns a unique id for each unique dates -->
-<xsl:function name="clml2akn:event-id" as="xs:string">
+<!-- <xsl:function name="clml2akn:event-id" as="xs:string">
 	<xsl:param name="date" as="xs:date" />
 	<xsl:variable name="position" select="index-of($event-dates, $date)" />
 	<xsl:value-of select="concat('effective-date-', string($position))" />
-</xsl:function>
+</xsl:function> -->
 
 <!-- takes an id and returns the order that commentary appears -->
 <xsl:function name="clml2akn:commentary-num" as="xs:integer">
@@ -220,7 +221,7 @@
 	<xsl:if test="$e/@RestrictStartDate | $e/@RestrictEndDate">
 		<xsl:attribute name="period">
 			<xsl:text>#</xsl:text>
-			<xsl:value-of select="clml2akn:period-id($e/@RestrictStartDate, $e/@RestrictEndDate)" />
+			<xsl:value-of select="clml2akn:make-time-interval-id($e/@RestrictStartDate, $e/@RestrictEndDate)" />
 		</xsl:attribute>
 	</xsl:if>
 	<xsl:if test="$e/@Status">
@@ -711,7 +712,7 @@ than one child, this template is merely a hcontainer wrapper with a heading.
 					<xsl:if test="@RestrictStartDate | @RestrictEndDate">
 						<xsl:attribute name="period">
 							<xsl:text>#</xsl:text>
-							<xsl:value-of select="clml2akn:period-id(@RestrictStartDate,@RestrictEndDate)" />
+							<xsl:value-of select="clml2akn:make-time-interval-id(@RestrictStartDate,@RestrictEndDate)" />
 						</xsl:attribute>
 					</xsl:if>
 					<xsl:if test="@Status">
