@@ -52,12 +52,10 @@ public class Clml2Akn implements URIResolver {
 	
 	public void transform(XdmNode clml, OutputStream output) {
 		XsltTransformer transform = executable.load();
-		transform.setInitialContextNode(clml);
-//		Serializer serializer = executable.getProcessor().newSerializer();
-//		serializer.setOutputStream(output);
-//		transform.setDestination(serializer);
-		transform.setDestination(Helper.makeDestination(new StreamResult(output), Helper.aknProperties));
+//		transform.setInitialContextNode(clml);
 		try {
+			transform.setSource(clml.asSource());
+			transform.setDestination(Helper.makeDestination(new StreamResult(output), Helper.aknProperties));
 			transform.transform();
 		} catch (SaxonApiException e) {
 			throw new RuntimeException(e);

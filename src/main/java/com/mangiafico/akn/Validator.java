@@ -8,6 +8,7 @@ import java.util.List;
 
 import javax.xml.XMLConstants;
 import javax.xml.transform.Source;
+import javax.xml.transform.dom.DOMSource;
 import javax.xml.transform.stream.StreamSource;
 import javax.xml.validation.Schema;
 import javax.xml.validation.SchemaFactory;
@@ -18,6 +19,10 @@ import org.w3c.dom.ls.LSInput;
 import org.w3c.dom.ls.LSResourceResolver;
 import org.xml.sax.SAXException;
 import org.xml.sax.SAXParseException;
+
+import net.sf.saxon.dom.NodeOverNodeInfo;
+import net.sf.saxon.om.NodeInfo;
+import net.sf.saxon.s9api.XdmNode;
 
 public class Validator {
 	
@@ -78,12 +83,17 @@ public class Validator {
 		return errorHandler.errors;
 	}
 
-//	public List<SAXException> validate(XdmNode akn) {
-//		NodeInfo info = akn.getUnderlyingNode();
-//		NodeOverNodeInfo node = NodeOverNodeInfo.wrap(info);
-//		Source source = new DOMSource(node);
-//		return validate(source);
-//	}
+	public List<SAXException> validate(XdmNode akn) {
+//		DOMSource source = new DOMSource();
+//		NodeWrapper wrapper;
+//		NodeOverNodeInfo n;
+////		source.setNode(akn.getUnderlyingNode());
+		NodeInfo info = akn.getUnderlyingNode();
+////		info.getDocumentRoot().
+		NodeOverNodeInfo node = NodeOverNodeInfo.wrap(info);
+		Source source = new DOMSource(node);
+		return validate(source);
+	}
 
 	private static class ErrorHandler implements org.xml.sax.ErrorHandler {
 		List<SAXException> errors = new LinkedList<SAXException>();
